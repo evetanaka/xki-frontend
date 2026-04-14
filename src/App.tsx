@@ -2,12 +2,12 @@ import { Outlet } from 'react-router-dom';
 import Nav from './components/layout/Nav';
 import Footer from './components/layout/Footer';
 
-export default function App() {
+export default function App({ navOnly }: { navOnly?: boolean }) {
   return (
-    <div className="bg-[#050505] text-[#E0E0E0] font-sans antialiased selection:bg-white selection:text-black overflow-x-hidden min-h-screen">
+    <div className="bg-[#050505] text-[#E0E0E0] font-sans antialiased selection:bg-white selection:text-black overflow-x-hidden min-h-screen flex flex-col">
       <Nav />
       <Outlet />
-      <Footer />
+      {!navOnly && <Footer />}
     </div>
   );
 }

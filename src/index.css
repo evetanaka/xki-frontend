@@ -90,3 +90,31 @@ body { font-family: 'Manrope', sans-serif; background: var(--bg); color: white; 
   border-color: rgba(255, 255, 255, 0.4);
   background: rgba(255, 255, 255, 0.05);
 }
+
+/* ─── Fade-in Animation ─── */
+.animate-fade-in {
+  animation: fadeIn 0.8s ease-out forwards;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Proposal Content (markdown) ─── */
+.proposal-content h1 { font-size: 1.25rem; font-weight: 600; color: white; margin: 1.5rem 0 0.75rem; font-family: 'Cinzel', serif; }
+.proposal-content h2 { font-size: 1.1rem; font-weight: 600; color: white; margin: 1.25rem 0 0.5rem; font-family: 'Cinzel', serif; }
+.proposal-content h3 { font-size: 0.95rem; font-weight: 600; color: rgba(255,255,255,0.85); margin: 1rem 0 0.5rem; }
+.proposal-content p { margin: 0.5rem 0; line-height: 1.7; }
+.proposal-content strong { color: rgba(255,255,255,0.9); font-weight: 600; }
+.proposal-content em { font-style: italic; color: rgba(255,255,255,0.7); }
+.proposal-content ul, .proposal-content ol { margin: 0.5rem 0 0.5rem 1.5rem; }
+.proposal-content li { margin: 0.25rem 0; line-height: 1.6; }
+.proposal-content ul li { list-style: disc; }
+.proposal-content ol li { list-style: decimal; }
+.proposal-content blockquote { border-left: 2px solid rgba(255,255,255,0.2); padding-left: 1rem; margin: 0.75rem 0; color: rgba(255,255,255,0.5); }
+.proposal-content code { background: rgba(255,255,255,0.08); padding: 0.15rem 0.4rem; border-radius: 3px; font-size: 0.85em; }
+.proposal-content a { color: rgba(255,255,255,0.7); text-decoration: underline; }
+
+/* ─── Guide Content ─── */
+.guide-content a { color: rgba(255,255,255,0.7); text-decoration: underline; text-underline-offset: 2px; }
+.guide-content a:hover { color: white; }

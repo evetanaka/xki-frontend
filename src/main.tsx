@@ -9,18 +9,31 @@ import GuidePage from './pages/GuidePage';
 import AdminPage from './pages/AdminPage';
 import './index.css';
 
+function AdminWrapper() {
+  return (
+    <div className="bg-[#050505] text-[#E0E0E0] font-sans antialiased selection:bg-white selection:text-black overflow-x-hidden min-h-screen">
+      <AdminPage />
+    </div>
+  );
+}
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>
       <Routes>
+        {/* Pages with shared Nav + Footer */}
         <Route element={<App />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/stake" element={<StakePage />} />
-          <Route path="/claim" element={<ClaimPage />} />
           <Route path="/guide" element={<GuidePage />} />
-          <Route path="/admin" element={<AdminPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
+        {/* Claim: shared Nav, custom footer (FooterStats inside ClaimPage) */}
+        <Route element={<App navOnly />}>
+          <Route path="/claim" element={<ClaimPage />} />
+        </Route>
+        {/* Admin: completely standalone layout */}
+        <Route path="/admin" element={<AdminWrapper />} />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>
