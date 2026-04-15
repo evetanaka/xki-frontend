@@ -1,9 +1,11 @@
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
 import { ChevronRight } from 'lucide-react';
 import NetworkCanvas from '../canvas/NetworkCanvas';
 import { useIntersectionObserver } from '../../hooks/useIntersectionObserver';
+import ComingSoonModal from '../ComingSoonModal';
 
 export default function HeroSection() {
+  const [showModal, setShowModal] = useState(false);
   const ref1 = useIntersectionObserver<HTMLParagraphElement>();
   const ref2 = useIntersectionObserver<HTMLHeadingElement>();
   const ref3 = useIntersectionObserver<HTMLParagraphElement>();
@@ -26,15 +28,17 @@ export default function HeroSection() {
         </p>
 
         <div ref={ref4} className="flex flex-col sm:flex-row items-center justify-center gap-5 mb-24 parallax-section">
-          <Link to="/stake" className="group px-8 py-4 bg-white text-black text-xs font-bold uppercase tracking-[0.2em] hover:bg-gray-200 transition-all flex items-center gap-3">
+          <button onClick={() => setShowModal(true)} className="group px-8 py-4 bg-white text-black text-xs font-bold uppercase tracking-[0.2em] hover:bg-gray-200 transition-all flex items-center gap-3">
             Stake XKI
             <ChevronRight className="w-4 h-4 opacity-50 group-hover:translate-x-1 transition-transform" />
-          </Link>
+          </button>
           <a href="#philosophy" className="px-8 py-4 border border-white/20 text-white text-xs font-bold uppercase tracking-[0.2em] hover:bg-white/5 transition-all flex items-center gap-3">
             Read the Manifesto
           </a>
         </div>
       </div>
+
+      <ComingSoonModal isOpen={showModal} onClose={() => setShowModal(false)} />
 
       {/* Stats Bar */}
       <div className="relative z-10 w-full border-t border-white/10 bg-[#050505]/60 backdrop-blur-xl mt-auto">

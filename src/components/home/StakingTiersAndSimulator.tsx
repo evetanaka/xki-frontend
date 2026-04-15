@@ -1,8 +1,9 @@
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { useIntersectionObserver } from '../../hooks/useIntersectionObserver';
 import { useStakingSimulator } from '../../hooks/useStakingSimulator';
 import { MULTIPLIERS, DURATIONS } from '../../lib/constants';
+import ComingSoonModal from '../ComingSoonModal';
 
 const tiers = [
   { emoji: '🔭', duration: '3 months', name: 'Explorer', mult: '1x', cooldown: '3 months', benefit: 'Base rewards from all ecosystem projects', highlight: false },
@@ -16,6 +17,7 @@ export default function StakingTiersAndSimulator() {
   const titleRef = useIntersectionObserver<HTMLDivElement>();
   const tableRef = useIntersectionObserver<HTMLDivElement>();
   const simRef = useIntersectionObserver<HTMLDivElement>();
+  const [showModal, setShowModal] = useState(false);
   const sim = useStakingSimulator();
 
   return (
@@ -123,10 +125,11 @@ export default function StakingTiersAndSimulator() {
             </div>
           </div>
 
-          <Link to="/stake" className="mt-8 w-full py-4 bg-white text-black text-xs font-bold uppercase tracking-[0.2em] hover:bg-gray-200 transition-colors flex items-center justify-center gap-3">
+          <button onClick={() => setShowModal(true)} className="mt-8 w-full py-4 bg-white text-black text-xs font-bold uppercase tracking-[0.2em] hover:bg-gray-200 transition-colors flex items-center justify-center gap-3">
             Start Staking
             <ArrowRight className="w-4 h-4 opacity-50" />
-          </Link>
+          </button>
+          <ComingSoonModal isOpen={showModal} onClose={() => setShowModal(false)} />
         </div>
       </div>
     </section>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Wallet, LogOut, ArrowLeftRight, PlusCircle, Copy, ChevronRight,
   Layers, Gift, Download, Clock, Zap, Info, AlertCircle, ArrowDown, X
@@ -6,6 +7,7 @@ import {
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver';
 import { useStakingSimulator } from '../hooks/useStakingSimulator';
 import { MULTIPLIERS, DURATIONS, TIER_NAMES, TIER_EMOJIS } from '../lib/constants';
+import ComingSoonModal from '../components/ComingSoonModal';
 
 const tiers = [
   { emoji: '🔭', duration: '3 months', name: 'Explorer', mult: '1x', cooldown: '3 months', benefit: 'Base rewards from all ecosystem projects', highlight: false },
@@ -19,6 +21,8 @@ const tiers = [
 const TIER_DURATIONS = [3, 6, 12, 24, 36];
 
 export default function StakePage() {
+  const navigate = useNavigate();
+  const [showComingSoon, setShowComingSoon] = useState(true);
   const [isConnected, setIsConnected] = useState(false);
   const [walletAddress] = useState('0x3B...96');
   const [showHardUnstakeModal, setShowHardUnstakeModal] = useState(false);
@@ -35,6 +39,7 @@ export default function StakePage() {
 
   return (
     <div className="bg-[#050505]">
+      <ComingSoonModal isOpen={showComingSoon} onClose={() => { setShowComingSoon(false); navigate('/'); }} />
       {/* Header */}
       <section className="pt-28 pb-8 px-6 md:px-8">
         <div className="max-w-6xl mx-auto">
