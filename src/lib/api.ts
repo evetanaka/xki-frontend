@@ -35,4 +35,10 @@ export const api = {
   getAdminClaims: () => request<any[]>('/admin/claims'),
   approveClaim: (id: string) => request<any>(`/admin/claims/${id}/approve`, { method: 'POST' }),
   rejectClaim: (id: string) => request<any>(`/admin/claims/${id}/reject`, { method: 'POST' }),
+  searchClaims: (q: string) => request<any[]>(`/admin/claims/search?q=${encodeURIComponent(q)}`),
+  validateAll: () => request<any>('/admin/validate-all', { method: 'POST' }),
+  markTeam: (wallets: { kiAddress: string; initialAmountDistributed: number }[]) =>
+    request<any>('/admin/claims/mark-team', { method: 'POST', body: JSON.stringify({ wallets }) }),
+  verifyClaim: (id: number) => request<any>(`/admin/claims/${id}/verify`, { method: 'POST' }),
+  deleteClaim: (id: number) => request<any>(`/admin/claims/${id}`, { method: 'DELETE' }),
 };

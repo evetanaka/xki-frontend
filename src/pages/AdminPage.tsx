@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Shield, Wallet, Clock, CheckCircle, Coins, Percent,
   RefreshCw, Download, Upload, Database, Inbox, X, Save,
-  Plus, Vote, Edit, Trash2, CheckCircle2,
+  Plus, Vote, Edit, Trash2, CheckCircle2, Search, ShieldCheck, Users, Loader,
 } from 'lucide-react';
 import { API_BASE, CHAIN_ID } from '../lib/constants';
 import { useKeplrWallet } from '../hooks/useKeplrWallet';
@@ -188,26 +188,62 @@ function ImportSection({ token }: { token: string }) {
 interface Claim {
   id: number; kiAddress: string; ethAddress: string; amount: number;
   status: string; txHash?: string; signature?: string; adminNotes?: string; createdAt: string;
+  isTeam?: boolean; initialAmountDistributed?: number; slashedAmount?: number; originalAmount?: number;
 }
 
 function statusColor(s: string): string {
   return { pending: 'text-amber-400', approved: 'text-blue-400', completed: 'text-emerald-400', rejected: 'text-red-400' }[s] || 'text-gray-400';
 }
 
-function ClaimsTable({ token }: { token: string }) {
+function ClaimsTable({ token, reloadRef }: { token: string; reloadRef?: React.MutableRefObject<(() => void) | null> }) {
   const [claims, setClaims] = useState<Claim[]>([]);
   const [filter, setFilter] = useState('pending');
   const [selected, setSelected] = useState<Claim | null>(null);
   const [lastUpdated, setLastUpdated] = useState('--');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  const [validatingAll, setValidatingAll] = useState(false);
 
   const load = useCallback(async () => {
     const url = filter === 'all' ? '/admin/claims' : `/admin/claims?status=${filter}`;
     const data = await apiCall(url, token);
     setClaims(Array.isArray(data) ? data : []);
     setLastUpdated(new Date().toLocaleTimeString());
+    setIsSearching(false);
   }, [filter, token]);
 
   useEffect(() => { load(); }, [load]);
+  useEffect(() => { if (reloadRef) reloadRef.current = load; }, [load, reloadRef]);
+
+  const doSearch = async () => {
+    if (searchQuery.trim().length < 3) { alert('Enter at least 3 characters to search'); return; }
+    try {
+      const data = await apiCall(`/admin/claims/search?q=${encodeURIComponent(searchQuery.trim())}`, token);
+      setClaims(Array.isArray(data) ? data : []);
+      setLastUpdated(new Date().toLocaleTimeString());
+      setIsSearching(true);
+    } catch (e: any) { alert('Search error: ' + e.message); }
+  };
+
+  const clearSearch = () => { setSearchQuery(''); setIsSearching(false); load(); };
+
+  const validateAll = async () => {
+    if (!confirm('This will verify all pending claims\' signatures and approve/reject them.\n\nContinue?')) return;
+    setValidatingAll(true);
+    try {
+      const data = await apiCall('/admin/validate-all', token, { method: 'POST' });
+      if (data.success) {
+        let msg = `Validation complete!\n\n✅ Approved: ${data.approved}\n❌ Rejected: ${data.rejected}\n📋 Total processed: ${data.total}`;
+        if (data.rejected > 0) {
+          msg += '\n\nRejected claims:';
+          data.details.filter((d: any) => !d.valid).forEach((d: any) => { msg += `\n• #${d.id} (${truncate(d.kiAddress, 16)}): ${d.reason}`; });
+        }
+        alert(msg);
+        load();
+      } else { alert('Error: ' + (data.error || 'Unknown error')); }
+    } catch (e: any) { alert('Error validating claims: ' + e.message); }
+    setValidatingAll(false);
+  };
 
   const exportCSV = async () => {
     const all = await apiCall('/admin/claims', token);
@@ -237,6 +273,27 @@ function ClaimsTable({ token }: { token: string }) {
         </div>
       </header>
 
+      {/* Search */}
+      <section className="flex flex-wrap items-center gap-3">
+        <div className="flex items-center gap-2 flex-1 min-w-[250px]">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" />
+            <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && doSearch()}
+              placeholder="Search by address, tx hash..."
+              className="w-full bg-transparent border border-white/10 py-2 pl-9 pr-4 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-white/30 transition-colors" />
+          </div>
+          <button onClick={doSearch} className="px-4 py-2 border border-white/20 text-white text-[10px] uppercase tracking-widest hover:bg-white hover:text-black transition-all flex items-center gap-2">
+            <Search className="w-3 h-3" /> Search
+          </button>
+          {isSearching && (
+            <button onClick={clearSearch} className="px-4 py-2 border border-white/20 text-white text-[10px] uppercase tracking-widest hover:bg-white hover:text-black transition-all flex items-center gap-2">
+              <X className="w-3 h-3" /> Clear
+            </button>
+          )}
+        </div>
+      </section>
+
       {/* Filters */}
       <section className="flex flex-wrap items-center gap-4">
         <select value={filter} onChange={(e) => setFilter(e.target.value)}
@@ -250,6 +307,11 @@ function ClaimsTable({ token }: { token: string }) {
         </button>
         <button onClick={exportCSV} className="px-4 py-2 border border-white/20 text-white text-[10px] uppercase tracking-widest hover:bg-white hover:text-black transition-all flex items-center gap-2">
           <Download className="w-3 h-3" /> Export CSV
+        </button>
+        <button onClick={validateAll} disabled={validatingAll}
+          className="px-4 py-2 border border-emerald-500/30 text-emerald-400 text-[10px] uppercase tracking-widest hover:bg-emerald-500 hover:text-black transition-all flex items-center gap-2 disabled:opacity-50">
+          {validatingAll ? <Loader className="w-3 h-3 animate-spin" /> : <ShieldCheck className="w-3 h-3" />}
+          {validatingAll ? 'Validating...' : 'Validate All Signatures'}
         </button>
       </section>
 
@@ -273,6 +335,7 @@ function ClaimsTable({ token }: { token: string }) {
                   <td className="py-4 px-6 text-sm text-white font-medium">{formatXKI(c.amount)} XKI</td>
                   <td className="py-4 px-6">
                     <span className={`text-[10px] uppercase tracking-widest font-bold ${statusColor(c.status)}`}>{c.status}</span>
+                    {c.isTeam && <span className="ml-2 text-[9px] uppercase tracking-widest font-bold text-amber-400 border border-amber-500/30 px-1.5 py-0.5">TEAM</span>}
                   </td>
                   <td className="py-4 px-6 text-xs text-gray-500">{formatDate(c.createdAt)}</td>
                   <td className="py-4 px-6">
@@ -309,18 +372,50 @@ function ClaimDetailModal({ claim, token, onClose, onUpdated }: { claim: Claim; 
   const [txHash, setTxHash] = useState(claim.txHash || '');
   const [notes, setNotes] = useState(claim.adminNotes || '');
   const [busy, setBusy] = useState(false);
+  const [isTeam, setIsTeam] = useState(claim.isTeam || false);
+  const [initialDist, setInitialDist] = useState(claim.initialAmountDistributed ? String(claim.initialAmountDistributed / 1_000_000) : '');
+  const [verifyResult, setVerifyResult] = useState<{ valid: boolean; reason: string } | null>(null);
+  const [verifying, setVerifying] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const update = async () => {
     if (status === 'completed' && !txHash) { alert('TX Hash is required for completed claims'); return; }
+    if (isTeam && !initialDist) { alert('Initial Amount Distributed is required for team wallets'); return; }
     setBusy(true);
+    const payload: any = { status, txHash, adminNotes: notes, isTeam };
+    if (isTeam && initialDist) { payload.initialAmountDistributed = Math.round(parseFloat(initialDist) * 1_000_000); }
     const res = await fetch(`${API_BASE}/admin/claims/${claim.id}`, {
       method: 'PATCH',
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status, txHash, adminNotes: notes }),
+      body: JSON.stringify(payload),
     });
     if (res.ok) { alert('Claim updated successfully'); onUpdated(); } else { const e = await res.json(); alert('Error: ' + (e.error || 'Unknown error')); }
     setBusy(false);
   };
+
+  const verifySig = async () => {
+    setVerifying(true); setVerifyResult(null);
+    try {
+      const data = await apiCall(`/admin/claims/${claim.id}/verify`, token, { method: 'POST' });
+      setVerifyResult(data);
+    } catch (e: any) { setVerifyResult({ valid: false, reason: e.message }); }
+    setVerifying(false);
+  };
+
+  const deleteClaim = async () => {
+    if (!confirm(`⚠️ Delete claim #${claim.id}?\n\nKi Address: ${claim.kiAddress}\nAmount: ${formatXKI(claim.amount)} XKI\n\nThis will allow the user to submit a new claim.`)) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`${API_BASE}/admin/claims/${claim.id}`, {
+        method: 'DELETE', headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) { alert('Claim deleted successfully. User can now re-claim.'); onUpdated(); }
+      else { const e = await res.json(); alert('Error: ' + (e.error || 'Unknown error')); }
+    } catch (e: any) { alert('Error deleting claim'); }
+    setDeleting(false);
+  };
+
+  const slashVal = parseFloat(initialDist) || 0;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={onClose}>
@@ -358,6 +453,20 @@ function ClaimDetailModal({ claim, token, onClose, onUpdated }: { claim: Claim; 
           <div className="space-y-2"><label className="text-[10px] uppercase tracking-widest text-gray-500">Created</label>
             <p className="text-sm text-gray-400">{formatDate(claim.createdAt)}</p></div>
 
+          {/* Verify Signature */}
+          <div className="border-t border-white/10 pt-6">
+            {verifyResult && (
+              <div className={`mb-3 text-sm px-3 py-2 border ${verifyResult.valid ? 'border-emerald-500/30 text-emerald-400 bg-emerald-900/20' : 'border-red-500/30 text-red-400 bg-red-900/20'}`}>
+                {verifyResult.valid ? '✅' : '❌'} {verifyResult.reason}
+              </div>
+            )}
+            <button onClick={verifySig} disabled={verifying}
+              className="w-full py-3 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-[0.2em] hover:bg-emerald-500 hover:text-black transition-all flex items-center justify-center gap-2 disabled:opacity-50 mb-4">
+              {verifying ? <Loader className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
+              {verifying ? 'Verifying...' : 'Verify Signature'}
+            </button>
+          </div>
+
           {/* Update form */}
           <div className="border-t border-white/10 pt-6">
             <h3 className="text-sm font-serif text-white mb-4">Update Claim</h3>
@@ -381,15 +490,97 @@ function ClaimDetailModal({ claim, token, onClose, onUpdated }: { claim: Claim; 
                 <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder="Add notes..."
                   className="w-full bg-transparent border border-white/10 py-3 px-4 text-sm text-white placeholder-gray-700 focus:outline-none focus:border-white/30 resize-none mt-1" />
               </div>
+
+              {/* Team Wallet Toggle */}
+              <div className="border border-amber-500/20 bg-amber-900/10 p-4 space-y-3">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input type="checkbox" checked={isTeam} onChange={(e) => setIsTeam(e.target.checked)}
+                    className="w-4 h-4 accent-amber-500" />
+                  <span className="text-[10px] uppercase tracking-widest text-amber-400 font-bold">Team Wallet</span>
+                </label>
+                {isTeam && (
+                  <div className="space-y-2 pl-7">
+                    <label className="text-[10px] uppercase tracking-widest text-gray-500">Initial Amount Distributed (XKI)</label>
+                    <input value={initialDist} onChange={(e) => setInitialDist(e.target.value)} type="number" placeholder="e.g. 100000"
+                      className="w-full bg-transparent border border-white/10 py-2 px-4 text-sm font-mono text-white placeholder-gray-700 focus:outline-none focus:border-white/30" />
+                    {slashVal > 0 && (
+                      <p className="text-xs text-amber-400">Slash: {formatNumber(slashVal / 2)} XKI (50% of {formatNumber(slashVal)} XKI)</p>
+                    )}
+                  </div>
+                )}
+              </div>
+
               <button onClick={update} disabled={busy}
                 className="w-full py-4 bg-white text-black text-xs font-bold uppercase tracking-[0.2em] hover:bg-gray-200 transition-colors flex items-center justify-center gap-3 disabled:opacity-50">
                 <Save className="w-4 h-4" /> {busy ? 'Updating...' : 'Update Claim'}
               </button>
             </div>
           </div>
+
+          {/* Delete Claim */}
+          <div className="border-t border-white/10 pt-6">
+            <button onClick={deleteClaim} disabled={deleting}
+              className="w-full py-3 border border-red-500/30 text-red-400 text-xs font-bold uppercase tracking-[0.2em] hover:bg-red-500 hover:text-white transition-all flex items-center justify-center gap-2 disabled:opacity-50">
+              {deleting ? <Loader className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+              {deleting ? 'Deleting...' : 'Delete Claim'}
+            </button>
+          </div>
         </div>
       </div>
     </div>
+  );
+}
+
+/* ══════════════════════════════════════
+   TEAM WALLETS SECTION
+   ══════════════════════════════════════ */
+
+function TeamWalletsSection({ token }: { token: string }) {
+  const [input, setInput] = useState('');
+  const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const markTeam = async () => {
+    if (!input.trim()) { alert('Please paste wallet addresses'); return; }
+    const lines = input.trim().split('\n').filter((l) => l.trim());
+    const wallets: { kiAddress: string; initialAmountDistributed: number }[] = [];
+    for (const line of lines) {
+      const parts = line.split(',').map((s) => s.trim());
+      if (parts.length < 2) { alert(`Invalid line: "${line}"\nExpected format: kiAddress, initialAmountDistributed`); return; }
+      wallets.push({ kiAddress: parts[0], initialAmountDistributed: Math.round(parseFloat(parts[1]) * 1_000_000) });
+    }
+    if (!confirm(`Mark ${wallets.length} wallet(s) as team and slash 50% of their initial distribution?\n\nThis will reduce their claim amounts.`)) return;
+    setBusy(true); setResult(null);
+    try {
+      const data = await apiCall('/admin/claims/mark-team', token, {
+        method: 'POST', body: JSON.stringify({ wallets }),
+      });
+      if (data.success) {
+        setResult({ ok: true, text: `✅ Marked: ${data.marked} | Skipped: ${data.skipped} | Not found: ${data.notFound}` });
+      } else { setResult({ ok: false, text: '❌ ' + (data.error || 'Unknown error') }); }
+    } catch (e: any) { setResult({ ok: false, text: '❌ Error: ' + e.message }); }
+    setBusy(false);
+  };
+
+  return (
+    <section className="glass-panel p-6">
+      <div className="flex items-center gap-3 mb-4">
+        <Users className="w-5 h-5 text-amber-400" />
+        <h3 className="text-sm font-serif text-white">Team Wallets</h3>
+        <span className="text-[10px] uppercase tracking-widest text-gray-500 ml-auto">Bulk mark &amp; slash</span>
+      </div>
+      <textarea value={input} onChange={(e) => setInput(e.target.value)} rows={5}
+        placeholder="kiAddress, initialAmountDistributed (XKI)&#10;ki1abc..., 100000&#10;ki1def..., 50000"
+        className="w-full bg-transparent border border-white/10 py-3 px-4 text-sm font-mono text-white placeholder-gray-600 focus:outline-none focus:border-white/30 resize-none mb-4" />
+      <div className="flex items-center gap-4">
+        <button onClick={markTeam} disabled={busy}
+          className="px-4 py-2 border border-amber-500/30 text-amber-400 text-[10px] uppercase tracking-widest hover:bg-amber-500 hover:text-black transition-all flex items-center gap-2 disabled:opacity-50">
+          {busy ? <Loader className="w-3 h-3 animate-spin" /> : <Users className="w-3 h-3" />}
+          {busy ? 'Processing...' : 'Mark as Team & Slash 50%'}
+        </button>
+        {result && <p className={`text-sm ${result.ok ? 'text-emerald-400' : 'text-red-400'}`}>{result.text}</p>}
+      </div>
+    </section>
   );
 }
 
@@ -712,6 +903,7 @@ export default function AdminPage() {
           <div className="space-y-8 animate-fade-in">
             <StatsGrid token={auth.token} />
             <ImportSection token={auth.token} />
+            <TeamWalletsSection token={auth.token} />
             <ClaimsTable token={auth.token} />
             <GovernanceAdmin token={auth.token} />
           </div>
