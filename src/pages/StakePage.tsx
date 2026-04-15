@@ -142,7 +142,7 @@ export default function StakePage() {
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-[10px] uppercase tracking-widest text-gray-500">Est. Monthly Rewards</span>
-                      <span className="text-lg font-mono text-white">~${Math.round(sim.monthly).toLocaleString()}</span>
+                      <span className="text-lg font-mono text-white">~{sim.monthlyDAR < 1 ? sim.monthlyDAR.toFixed(2) : Math.round(sim.monthlyDAR).toLocaleString()} $DAR</span>
                     </div>
                   </div>
                 </div>

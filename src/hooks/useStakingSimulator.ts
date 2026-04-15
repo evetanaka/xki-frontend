@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { MULTIPLIERS, TIER_NAMES, BASE_APY, DURATIONS } from '../lib/constants';
+import { MULTIPLIERS, TIER_NAMES, DURATIONS, DAR_MONTHLY_POOL, TOTAL_EFFECTIVE_POWER } from '../lib/constants';
 
 export function useStakingSimulator(initialAmount = 10000, initialDuration = 12) {
   const [amount, setAmount] = useState(initialAmount);
@@ -8,11 +8,10 @@ export function useStakingSimulator(initialAmount = 10000, initialDuration = 12)
   const result = useMemo(() => {
     const multiplier = MULTIPLIERS[duration] || 1;
     const power = amount * multiplier;
-    const monthlyBase = (amount * BASE_APY) / 12;
-    const monthly = monthlyBase * multiplier;
+    const monthlyDAR = (power / TOTAL_EFFECTIVE_POWER) * DAR_MONTHLY_POOL;
     const tierName = TIER_NAMES[duration] || '';
 
-    return { multiplier, power, monthly, tierName };
+    return { multiplier, power, monthlyDAR, tierName };
   }, [amount, duration]);
 
   return {

@@ -111,7 +111,7 @@ export default function StakingTiersAndSimulator() {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-[10px] uppercase tracking-widest text-gray-500">Est. Monthly Rewards</span>
-                <span className="text-lg font-mono text-white">~${Math.round(sim.monthly).toLocaleString()}</span>
+                <span className="text-lg font-mono text-white">~{sim.monthlyDAR < 1 ? sim.monthlyDAR.toFixed(2) : Math.round(sim.monthlyDAR).toLocaleString()} $DAR</span>
               </div>
               <div className="space-y-2 pt-2">
                 <p className="text-[9px] uppercase tracking-widest text-gray-600 mb-2">Breakdown by Token</p>
@@ -119,7 +119,7 @@ export default function StakingTiersAndSimulator() {
                   <span className="text-gray-500 flex items-center gap-2">
                     <span className="w-2 h-2 bg-white/40 rounded-full inline-block" />$DAR
                   </span>
-                  <span className="text-gray-400 font-mono">~${Math.round(sim.monthly)}</span>
+                  <span className="text-gray-400 font-mono">~{sim.monthlyDAR < 1 ? sim.monthlyDAR.toFixed(2) : Math.round(sim.monthlyDAR).toLocaleString()} $DAR</span>
                 </div>
               </div>
             </div>
