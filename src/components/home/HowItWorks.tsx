@@ -55,14 +55,14 @@ export default function HowItWorks() {
         <div ref={flywheelRef} className="flex flex-col items-center parallax-section">
           <div className="relative w-72 h-72 md:w-96 md:h-96 mb-12">
             {/* Outer ring */}
-            <div className="absolute inset-0 rounded-full border border-white/5">
+            <div className="absolute inset-0 rounded-full border border-white/5 flywheel-ring">
               <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-white/20 rounded-full" />
               <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-3 h-3 bg-white/10 rounded-full" />
               <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 bg-white/10 rounded-full" />
               <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-3 h-3 bg-white/20 rounded-full" />
             </div>
             {/* Middle ring */}
-            <div className="absolute inset-8 md:inset-12 rounded-full border border-white/8">
+            <div className="absolute inset-8 md:inset-12 rounded-full border border-white/8 flywheel-ring-reverse">
               <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[8px] uppercase tracking-widest text-gray-500 whitespace-nowrap bg-[#050505] px-2">Projects</div>
               <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 text-[8px] uppercase tracking-widest text-gray-500 whitespace-nowrap bg-[#050505] px-2">Stakers</div>
               <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 text-[8px] uppercase tracking-widest text-gray-500 whitespace-nowrap bg-[#050505] px-2">Fees</div>
@@ -70,7 +70,7 @@ export default function HowItWorks() {
             </div>
             {/* Center */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-20 h-20 md:w-24 md:h-24 bg-white/5 border border-white/10 rounded-full flex items-center justify-center">
+              <div className="w-20 h-20 md:w-24 md:h-24 bg-white/5 border border-white/10 rounded-full flex items-center justify-center pulse-glow">
                 <span className="font-serif text-white text-lg md:text-xl font-bold">XKI</span>
               </div>
             </div>
