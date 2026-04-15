@@ -25,7 +25,7 @@ export default function CountdownBanner() {
   if (diff <= 0) return null;
 
   return (
-    <div className="w-full bg-gradient-to-r from-emerald-900/90 via-emerald-800/90 to-green-900/90 border-b border-emerald-500/20 backdrop-blur-sm sticky top-[57px] z-40">
+    <div className="w-full bg-gradient-to-r from-emerald-900/90 via-emerald-800/90 to-green-900/90 border-b border-emerald-500/20 backdrop-blur-sm sticky top-[65px] z-40">
       <div className="max-w-6xl mx-auto px-4 py-2.5 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-6">
         <div className="flex items-center gap-2 text-emerald-300">
           <Clock className="w-3.5 h-3.5" />
