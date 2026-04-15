@@ -11,7 +11,8 @@ export default function FounderSection() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-center">
           {/* Book Mockup */}
           <div ref={bookRef} className="flex justify-center parallax-section">
-            <div className="w-56 md:w-64 aspect-[3/4] bg-[#1a2744] border border-[#2a3f6a]/50 shadow-2xl flex flex-col justify-between p-8 relative overflow-hidden">
+            <div className="book-3d">
+            <div className="book-3d-inner w-56 md:w-64 aspect-[3/4] bg-[#1a2744] border border-[#2a3f6a]/50 shadow-2xl flex flex-col justify-between p-8 relative overflow-hidden">
               <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-black/30 to-transparent" />
               <div className="relative z-10">
                 <p className="text-[8px] uppercase tracking-[0.4em] text-[#5a7ab5] mb-4">Ki Foundation</p>
@@ -22,6 +23,7 @@ export default function FounderSection() {
                 <p className="text-[9px] text-[#5a7ab5] tracking-wider">Réda Berrehili</p>
               </div>
               <div className="absolute inset-0 opacity-5" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '20px 20px' }} />
+            </div>
             </div>
           </div>
 
