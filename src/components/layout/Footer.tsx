@@ -4,7 +4,7 @@ export default function Footer() {
   return (
     <footer className="border-t border-white/5 bg-[#030303]">
       <div className="max-w-6xl mx-auto px-6 md:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
           {/* Brand */}
           <div>
             <div className="flex items-center gap-3 mb-4">
@@ -22,16 +22,6 @@ export default function Footer() {
               <Link to="/claim" className="block text-xs text-gray-600 hover:text-white transition-colors">Migration Portal</Link>
               <Link to="/stake" className="block text-xs text-gray-600 hover:text-white transition-colors">Staking</Link>
               <Link to="/guide" className="block text-xs text-gray-600 hover:text-white transition-colors">Governance Guide</Link>
-            </div>
-          </div>
-          {/* Resources */}
-          <div>
-            <p className="text-[10px] uppercase tracking-widest text-gray-500 mb-4">Resources</p>
-            <div className="space-y-3">
-              <a href="#" className="block text-xs text-gray-600 hover:text-white transition-colors">Documentation</a>
-              <a href="#" className="block text-xs text-gray-600 hover:text-white transition-colors">GitHub</a>
-              <a href="#" className="block text-xs text-gray-600 hover:text-white transition-colors">Blog</a>
-              <a href="#" className="block text-xs text-gray-600 hover:text-white transition-colors">Tokenomics Paper</a>
             </div>
           </div>
           {/* Legal */}
