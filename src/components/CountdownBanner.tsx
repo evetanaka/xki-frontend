@@ -32,14 +32,14 @@ export default function CountdownBanner() {
           <span className="text-[10px] uppercase tracking-[0.2em] font-semibold">Migration Deadline</span>
         </div>
 
-        <div className="flex items-center gap-1.5 font-mono text-white text-sm">
-          <span className="bg-emerald-950/60 border border-emerald-500/20 px-2 py-0.5 rounded-sm">{pad(days)}<span className="text-[8px] text-emerald-400/60 ml-0.5">d</span></span>
+        <div className="flex items-center gap-1.5 font-mono text-white text-sm leading-none">
+          <span className="bg-emerald-950/60 border border-emerald-500/20 px-2 py-1 rounded-sm inline-flex items-center">{pad(days)}<span className="text-[8px] text-emerald-400/60 ml-0.5">d</span></span>
           <span className="text-emerald-500/40">:</span>
-          <span className="bg-emerald-950/60 border border-emerald-500/20 px-2 py-0.5 rounded-sm">{pad(hours)}<span className="text-[8px] text-emerald-400/60 ml-0.5">h</span></span>
+          <span className="bg-emerald-950/60 border border-emerald-500/20 px-2 py-1 rounded-sm inline-flex items-center">{pad(hours)}<span className="text-[8px] text-emerald-400/60 ml-0.5">h</span></span>
           <span className="text-emerald-500/40">:</span>
-          <span className="bg-emerald-950/60 border border-emerald-500/20 px-2 py-0.5 rounded-sm">{pad(minutes)}<span className="text-[8px] text-emerald-400/60 ml-0.5">m</span></span>
+          <span className="bg-emerald-950/60 border border-emerald-500/20 px-2 py-1 rounded-sm inline-flex items-center">{pad(minutes)}<span className="text-[8px] text-emerald-400/60 ml-0.5">m</span></span>
           <span className="text-emerald-500/40">:</span>
-          <span className="bg-emerald-950/60 border border-emerald-500/20 px-2 py-0.5 rounded-sm">{pad(seconds)}<span className="text-[8px] text-emerald-400/60 ml-0.5">s</span></span>
+          <span className="bg-emerald-950/60 border border-emerald-500/20 px-2 py-1 rounded-sm inline-flex items-center">{pad(seconds)}<span className="text-[8px] text-emerald-400/60 ml-0.5">s</span></span>
         </div>
 
         <Link to="/claim" className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em] text-emerald-300 hover:text-white transition-colors font-semibold">
