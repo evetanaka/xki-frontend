@@ -5,11 +5,40 @@ declare global {
   interface Window {
     keplr?: {
       enable: (chainId: string) => Promise<void>;
+      experimentalSuggestChain: (chainInfo: any) => Promise<void>;
       getOfflineSigner: (chainId: string) => any;
       signArbitrary: (chainId: string, signer: string, data: string) => Promise<{ signature: string; pub_key: { value: string } }>;
     };
   }
 }
+
+const KI_CHAIN_INFO = {
+  chainId: 'kichain-2',
+  chainName: 'Ki Chain',
+  rpc: 'https://rpc-mainnet.blockchain.ki',
+  rest: 'https://api-mainnet.blockchain.ki',
+  bip44: { coinType: 118 },
+  bech32Config: {
+    bech32PrefixAccAddr: 'ki',
+    bech32PrefixAccPub: 'kipub',
+    bech32PrefixValAddr: 'kivaloper',
+    bech32PrefixValPub: 'kivaloperpub',
+    bech32PrefixConsAddr: 'kivalcons',
+    bech32PrefixConsPub: 'kivalconspub',
+  },
+  currencies: [
+    { coinDenom: 'XKI', coinMinimalDenom: 'uxki', coinDecimals: 6 },
+  ],
+  feeCurrencies: [
+    {
+      coinDenom: 'XKI',
+      coinMinimalDenom: 'uxki',
+      coinDecimals: 6,
+      gasPriceStep: { low: 0.025, average: 0.03, high: 0.05 },
+    },
+  ],
+  stakeCurrency: { coinDenom: 'XKI', coinMinimalDenom: 'uxki', coinDecimals: 6 },
+};
 
 interface WalletState {
   address: string | null;
@@ -43,6 +72,10 @@ export function useKeplrWallet() {
     setState((s) => ({ ...s, isLoading: true, error: null }));
 
     try {
+      // Suggest Ki Chain to Keplr if not already added
+      if (window.keplr.experimentalSuggestChain) {
+        await window.keplr.experimentalSuggestChain(KI_CHAIN_INFO);
+      }
       await window.keplr.enable(CHAIN_ID);
       const signer = window.keplr.getOfflineSigner(CHAIN_ID);
       const accounts = await signer.getAccounts();
