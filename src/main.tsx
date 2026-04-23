@@ -7,6 +7,7 @@ import StakePage from './pages/StakePage';
 import ClaimPage from './pages/ClaimPage';
 import GuidePage from './pages/GuidePage';
 import AdminPage from './pages/AdminPage';
+import NftClaimPage from './pages/NftClaimPage';
 import './index.css';
 
 function AdminWrapper() {
@@ -31,6 +32,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         {/* Claim: shared Nav, custom footer (FooterStats inside ClaimPage) */}
         <Route element={<App navOnly />}>
           <Route path="/claim" element={<ClaimPage />} />
+          <Route path="/nft-claim" element={<NftClaimPage />} />
         </Route>
         {/* Admin: completely standalone layout */}
         <Route path="/admin" element={<AdminWrapper />} />

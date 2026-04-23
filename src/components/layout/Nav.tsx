@@ -18,6 +18,7 @@ export default function Nav() {
             <a href="/#staking" className="hidden md:block text-[10px] uppercase tracking-widest text-gray-500 hover:text-white transition-colors">Staking</a>
             <a href="/#tokenomics" className="hidden md:block text-[10px] uppercase tracking-widest text-gray-500 hover:text-white transition-colors">Tokenomics</a>
             <Link to="/claim" className="hidden md:block text-[10px] uppercase tracking-widest text-gray-500 hover:text-white transition-colors">Claim</Link>
+            <Link to="/nft-claim" className="hidden md:block text-[10px] uppercase tracking-widest text-amber-500/70 hover:text-amber-400 transition-colors">NFT Claim</Link>
             <button onClick={() => setShowModal(true)} className="px-4 py-2 bg-white text-black text-[10px] uppercase tracking-widest font-bold hover:bg-gray-200 transition-colors">
               Stake XKI
             </button>

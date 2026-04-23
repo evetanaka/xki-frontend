@@ -41,4 +41,18 @@ export const api = {
     request<any>('/admin/claims/mark-team', { method: 'POST', body: JSON.stringify({ wallets }) }),
   verifyClaim: (id: number) => request<any>(`/admin/claims/${id}/verify`, { method: 'POST' }),
   deleteClaim: (id: number) => request<any>(`/admin/claims/${id}`, { method: 'DELETE' }),
+
+  // NFT Claim
+  getNftConfig: () => request<any>('/nft/config'),
+  getNftPortfolio: (kiAddress: string) => request<any>(`/nft/portfolio/${kiAddress}`),
+  getNftClaimStatus: (kiAddress: string) => request<any>(`/nft/claim/${kiAddress}`),
+  getNftNonce: (kiAddress: string) => request<any>(`/nft/nonce/${kiAddress}`),
+  submitNftClaim: (data: {
+    ki_address: string;
+    eth_address: string;
+    signature: string;
+    pub_key: string;
+    nonce: string;
+    signed_message: string;
+  }) => request<any>('/nft/claims', { method: 'POST', body: JSON.stringify(data) }),
 };
