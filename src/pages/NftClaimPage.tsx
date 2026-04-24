@@ -334,7 +334,7 @@ export default function NftClaimPage() {
   return (
     <main className="flex-1">
       {/* ── Hero ── */}
-      <section className="relative flex flex-col items-center" style={{ paddingTop: '200px', paddingBottom: '120px' }}>
+      <section className="relative flex flex-col items-center" style={{ paddingTop: '140px', paddingBottom: '100px' }}>
         {/* Subtle radial glow */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] pointer-events-none"
              style={{ background: 'radial-gradient(ellipse, rgba(212,175,55,0.03) 0%, transparent 70%)' }} />
@@ -355,7 +355,7 @@ export default function NftClaimPage() {
 
           {/* Stats */}
           {config?.stats && (
-            <div ref={statsRef} className="parallax-section mt-16">
+            <div ref={statsRef} className="parallax-section visible mt-16">
               <div className="flex justify-center gap-16">
                 {[
                   { value: config.stats.total_nfts?.toLocaleString(), label: 'Eligible NFTs' },
@@ -373,7 +373,7 @@ export default function NftClaimPage() {
 
           {/* Allocation table */}
           {config?.allocations && (
-            <div ref={allocRef} className="parallax-section mt-12">
+            <div ref={allocRef} className="parallax-section visible mt-12">
               <AllocationTable allocations={config.allocations} />
             </div>
           )}
