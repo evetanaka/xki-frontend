@@ -108,11 +108,11 @@ function SummarySection({ summary, onClaim }: { summary: any; onClaim: () => voi
   return (
     <div ref={ref} className="parallax-section">
       <div className="glass-panel" style={{ padding: '2.5rem' }}>
-        <div className="grid md:grid-cols-[1fr_auto_1fr] gap-8 items-center">
+        <div className="grid md:grid-cols-[1fr_auto_1fr] gap-6 sm:gap-8 items-center">
           {/* Total allocation */}
           <div className="text-center md:text-left">
-            <p className="text-[10px] uppercase tracking-[0.5em] text-white/30 font-light mb-3">Total Allocation</p>
-            <p className="text-4xl md:text-5xl font-serif text-white tracking-wide">
+            <p className="text-[9px] sm:text-[10px] uppercase tracking-[0.4em] sm:tracking-[0.5em] text-white/30 font-light mb-2 sm:mb-3">Total Allocation</p>
+            <p className="text-3xl sm:text-4xl md:text-5xl font-serif text-white tracking-wide">
               {formatXKI(summary.total_allocation)}
             </p>
             <p className="text-sm text-white/30 font-light mt-1">{summary.total_nfts} NFTs · $XKI</p>
@@ -260,20 +260,20 @@ function FilterTabs({ active, counts, onChange }: {
 function AllocationTable({ allocations }: { allocations: Record<string, string> }) {
   const scarcityOrder = ['Legendary', 'Epic', 'Rare', 'Uncommon', 'Common'];
   return (
-    <div className="flex justify-center">
-      <div className="inline-flex gap-px overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: '2px' }}>
+    <div className="flex justify-center px-4">
+      <div className="grid grid-cols-3 sm:grid-cols-5 gap-px w-full max-w-xl sm:max-w-none sm:w-auto sm:inline-grid" style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: '2px', overflow: 'hidden' }}>
         {scarcityOrder.map(s => {
           const amount = allocations[s];
           if (!amount || amount === '0') return null;
           const r = getRarity(s);
           return (
-            <div key={s} className="px-5 py-4 text-center" style={{ background: r.accent, minWidth: '100px' }}>
-              <div className="flex items-center justify-center gap-1.5 mb-1">
+            <div key={s} className="px-3 sm:px-5 py-3 sm:py-4 text-center" style={{ background: r.accent }}>
+              <div className="flex items-center justify-center gap-1 sm:gap-1.5 mb-1">
                 <span className="w-1 h-1 rounded-full" style={{ backgroundColor: r.dot }} />
-                <span className="text-[9px] uppercase tracking-[0.2em] text-white/40 font-light">{s}</span>
+                <span className="text-[8px] sm:text-[9px] uppercase tracking-[0.15em] sm:tracking-[0.2em] text-white/40 font-light">{s}</span>
               </div>
-              <div className="text-base text-white font-serif tracking-wide">{formatXKI(amount)}</div>
-              <div className="text-[9px] text-white/20 font-light tracking-wider mt-0.5">per NFT</div>
+              <div className="text-sm sm:text-base text-white font-serif tracking-wide">{formatXKI(amount)}</div>
+              <div className="text-[8px] sm:text-[9px] text-white/20 font-light tracking-wider mt-0.5">per NFT</div>
             </div>
           );
         })}
@@ -334,7 +334,7 @@ export default function NftClaimPage() {
   return (
     <main className="flex-1">
       {/* ── Hero ── */}
-      <section className="relative flex flex-col items-center" style={{ paddingTop: '140px', paddingBottom: '100px' }}>
+      <section className="relative flex flex-col items-center" style={{ paddingTop: '100px', paddingBottom: '60px' }}>
         {/* Subtle radial glow */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] pointer-events-none"
              style={{ background: 'radial-gradient(ellipse, rgba(212,175,55,0.03) 0%, transparent 70%)' }} />
@@ -343,11 +343,11 @@ export default function NftClaimPage() {
           <div ref={heroRef} className="parallax-section space-y-8">
             <p className="text-[10px] uppercase tracking-[0.6em] text-white/30 font-light">NFT Holders Airdrop</p>
 
-            <h1 className="text-3xl sm:text-4xl md:text-[3.5rem] font-serif text-white tracking-wide !leading-tight gradient-text">
+            <h1 className="text-2xl sm:text-4xl md:text-[3.5rem] font-serif text-white tracking-wide !leading-tight gradient-text">
               Claim Your $XKI
             </h1>
 
-            <p className="max-w-xl mx-auto text-sm md:text-base text-white/30 font-light leading-relaxed">
+            <p className="max-w-xl mx-auto text-xs sm:text-sm md:text-base text-white/30 font-light leading-relaxed px-2">
               Cosmon NFT holders are eligible for a share of the 5,000,000 $XKI airdrop pool.
               Connect your Ki Chain wallet to see your allocation.
             </p>
@@ -356,15 +356,15 @@ export default function NftClaimPage() {
           {/* Stats */}
           {config?.stats && (
             <div ref={statsRef} className="parallax-section visible mt-16">
-              <div className="flex justify-center gap-16">
+              <div className="flex justify-center gap-8 sm:gap-16 flex-wrap">
                 {[
                   { value: config.stats.total_nfts?.toLocaleString(), label: 'Eligible NFTs' },
                   { value: config.stats.total_wallets?.toLocaleString(), label: 'Wallets' },
                   { value: `${config.stats.claims_percentage || 0}%`, label: 'Claimed' },
                 ].map(({ value, label }) => (
                   <div key={label} className="text-center">
-                    <div className="text-2xl md:text-3xl font-serif text-white tracking-wide">{value}</div>
-                    <div className="text-[10px] uppercase tracking-[0.3em] text-white/25 font-light mt-2">{label}</div>
+                    <div className="text-xl sm:text-2xl md:text-3xl font-serif text-white tracking-wide">{value}</div>
+                    <div className="text-[8px] sm:text-[10px] uppercase tracking-[0.2em] sm:tracking-[0.3em] text-white/25 font-light mt-1 sm:mt-2">{label}</div>
                   </div>
                 ))}
               </div>
@@ -387,7 +387,7 @@ export default function NftClaimPage() {
               <button
                 onClick={connect}
                 disabled={walletLoading}
-                className="group px-10 py-4 text-xs font-bold uppercase tracking-[0.2em] transition-all duration-500 flex items-center gap-3 mx-auto disabled:opacity-30"
+                className="group px-6 sm:px-10 py-4 text-[10px] sm:text-xs font-bold uppercase tracking-[0.15em] sm:tracking-[0.2em] transition-all duration-500 flex items-center gap-3 mx-auto disabled:opacity-30"
                 style={{
                   background: 'linear-gradient(135deg, #D4AF37, #B8941F)',
                   color: '#000',
@@ -483,7 +483,7 @@ export default function NftClaimPage() {
               </div>
 
               {/* Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-5">
                 {filteredNfts.map((nft: any) => (
                   <NftCard key={`${nft.collection}-${nft.token_id}`} nft={nft} />
                 ))}
