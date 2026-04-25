@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useKeplrWallet } from '../hooks/useKeplrWallet';
 import { api } from '../lib/api';
 import { ChevronRight } from 'lucide-react';
+import ClaimFlow from '../components/nft/ClaimFlow';
 
 /* ── Intersection observer for parallax ── */
 function useParallax<T extends HTMLElement>() {
@@ -284,7 +285,7 @@ function AllocationTable({ allocations }: { allocations: Record<string, string> 
 
 /* ── Main Page ── */
 export default function NftClaimPage() {
-  const { address, isConnected, connect, isLoading: walletLoading, error: walletError } = useKeplrWallet();
+  const { address, isConnected, connect, isLoading: walletLoading, error: walletError, signMessage } = useKeplrWallet();
   const [portfolio, setPortfolio] = useState<any>(null);
   const [config, setConfig] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -446,8 +447,25 @@ export default function NftClaimPage() {
             <ClaimedState claim={portfolio.existing_claim} />
           )}
 
+          {/* Claim Flow */}
+          {step === 'claim' && portfolio?.summary && !portfolio?.existing_claim && (
+            <div className="space-y-10">
+              <ClaimFlow
+                kiAddress={address!}
+                totalAllocation={portfolio.summary.total_allocation}
+                nftCount={portfolio.summary.total_nfts}
+                onSign={signMessage}
+                onComplete={(claim) => {
+                  setPortfolio((p: any) => ({ ...p, existing_claim: claim }));
+                  setStep('portfolio');
+                }}
+                onCancel={() => setStep('portfolio')}
+              />
+            </div>
+          )}
+
           {/* Portfolio content */}
-          {!loading && portfolio?.nfts?.length > 0 && !portfolio?.existing_claim && (
+          {!loading && portfolio?.nfts?.length > 0 && !portfolio?.existing_claim && step !== 'claim' && (
             <div className="space-y-10">
               {/* Wallet bar */}
               <div className="flex items-center justify-between">
