@@ -8,12 +8,13 @@ import ClaimPage from './pages/ClaimPage';
 import GuidePage from './pages/GuidePage';
 import AdminPage from './pages/AdminPage';
 import NftClaimPage from './pages/NftClaimPage';
+import NftAdminPage from './pages/NftAdminPage';
 import './index.css';
 
-function AdminWrapper() {
+function AdminWrapper({ children }: { children: React.ReactNode }) {
   return (
     <div className="bg-[#050505] text-[#E0E0E0] font-sans antialiased selection:bg-white selection:text-black overflow-x-hidden min-h-screen">
-      <AdminPage />
+      {children}
     </div>
   );
 }
@@ -35,7 +36,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           <Route path="/nft-claim" element={<NftClaimPage />} />
         </Route>
         {/* Admin: completely standalone layout */}
-        <Route path="/admin" element={<AdminWrapper />} />
+        <Route path="/admin" element={<AdminWrapper><AdminPage /></AdminWrapper>} />
+        <Route path="/admin/nft" element={<AdminWrapper><NftAdminPage /></AdminWrapper>} />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>
