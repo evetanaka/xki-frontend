@@ -314,7 +314,7 @@ function StatusModal({ claimIds, onClose, onSaved }: { claimIds: number[]; onClo
 
 /* ── Main Admin Page ── */
 export default function NftAdminPage() {
-  const [authed, setAuthed] = useState(!!localStorage.getItem(ADMIN_KEY_STORAGE));
+  const [authed, setAuthed] = useState(false);
   const [stats, setStats] = useState<any>(null);
   const [claims, setClaims] = useState<any[]>([]);
   const [pagination, setPagination] = useState({ page: 1, limit: 50, total: 0, pages: 0 });
