@@ -9,11 +9,13 @@ import GuidePage from './pages/GuidePage';
 import AdminPage from './pages/AdminPage';
 import NftClaimPage from './pages/NftClaimPage';
 import NftAdminPage from './pages/NftAdminPage';
+import AdminNav from './components/admin/AdminNav';
 import './index.css';
 
 function AdminWrapper({ children }: { children: React.ReactNode }) {
   return (
     <div className="bg-[#050505] text-[#E0E0E0] font-sans antialiased selection:bg-white selection:text-black overflow-x-hidden min-h-screen">
+      <AdminNav />
       {children}
     </div>
   );
