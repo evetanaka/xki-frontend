@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
-import { api } from '../lib/api';
+import { useKeplrWallet } from '../hooks/useKeplrWallet';
+import { CHAIN_ID } from '../lib/constants';
 import {
   RefreshCw, Download, Search, ChevronLeft, ChevronRight,
   Loader2, AlertCircle, Check, Edit3, Save, X,
 } from 'lucide-react';
 
-const ADMIN_KEY_STORAGE = 'xki_nft_admin_key';
+const ADMIN_WALLET = 'ki1ypnke0r4uk6u82w4gh73kc5tz0qsn0ahek0653';
+const ADMIN_KEY = 'TonApiKeySecrete123';
 
 /* ── Helpers ── */
 function fmt(n: number | string): string {
@@ -20,9 +22,8 @@ function truncAddr(s: string, len = 12): string {
 
 /* ── Admin API wrapper with X-Admin-Key ── */
 function adminFetch(path: string, options?: RequestInit) {
-  const key = localStorage.getItem(ADMIN_KEY_STORAGE) || '';
   return fetch(`${(import.meta as any).env?.VITE_API_BASE || 'https://api.foundation.ki/api'}${path}`, {
-    headers: { 'Content-Type': 'application/json', 'X-Admin-Key': key, ...options?.headers },
+    headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY, ...options?.headers },
     ...options,
   }).then(async res => {
     if (!res.ok) {
@@ -50,45 +51,53 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
-/* ── Auth Gate ── */
-function AuthGate({ onAuth }: { onAuth: (key: string) => void }) {
-  const [key, setKey] = useState('');
-  const [error, setError] = useState(false);
+/* ── Auth Gate — Keplr Wallet ── */
+function AuthGate({ onAuth }: { onAuth: () => void }) {
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const submit = async () => {
+  const authenticate = async () => {
+    setError(null);
     setLoading(true);
-    setError(false);
-    localStorage.setItem(ADMIN_KEY_STORAGE, key);
     try {
-      await adminFetch('/nft/admin/stats');
-      onAuth(key);
-    } catch {
-      setError(true);
-      localStorage.removeItem(ADMIN_KEY_STORAGE);
-    } finally {
-      setLoading(false);
+      if (!window.keplr) { setError('Keplr wallet not found. Please install the extension.'); setLoading(false); return; }
+      if (window.keplr.experimentalSuggestChain) {
+        await window.keplr.experimentalSuggestChain({
+          chainId: 'kichain-2', chainName: 'Ki Chain',
+          rpc: 'https://rpc-mainnet.blockchain.ki', rest: 'https://api-mainnet.blockchain.ki',
+          bip44: { coinType: 118 },
+          bech32Config: { bech32PrefixAccAddr: 'ki', bech32PrefixAccPub: 'kipub', bech32PrefixValAddr: 'kivaloper', bech32PrefixValPub: 'kivaloperpub', bech32PrefixConsAddr: 'kivalcons', bech32PrefixConsPub: 'kivalconspub' },
+          currencies: [{ coinDenom: 'XKI', coinMinimalDenom: 'uxki', coinDecimals: 6 }],
+          feeCurrencies: [{ coinDenom: 'XKI', coinMinimalDenom: 'uxki', coinDecimals: 6, gasPriceStep: { low: 0.025, average: 0.03, high: 0.05 } }],
+          stakeCurrency: { coinDenom: 'XKI', coinMinimalDenom: 'uxki', coinDecimals: 6 },
+        });
+      }
+      await window.keplr.enable(CHAIN_ID);
+      const signer = (window.keplr as any).getOfflineSigner(CHAIN_ID);
+      const accounts = await signer.getAccounts();
+      const address = accounts[0]?.address;
+      if (address !== ADMIN_WALLET) {
+        setError('Access denied. This wallet is not authorized.');
+        setLoading(false);
+        return;
+      }
+      onAuth();
+    } catch (e: any) {
+      setError(e.message || 'Authentication failed');
     }
+    setLoading(false);
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center" style={{ background: '#050505' }}>
       <div className="glass-panel w-full max-w-sm" style={{ padding: '2.5rem' }}>
         <h1 className="text-xl font-serif text-white text-center mb-6 tracking-wide">NFT Admin</h1>
-        <input
-          type="password"
-          value={key}
-          onChange={e => setKey(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && submit()}
-          placeholder="Admin API Key"
-          className="w-full px-4 py-3 text-sm bg-transparent text-white font-mono placeholder-white/15 outline-none mb-4"
-          style={{ border: '1px solid rgba(255,255,255,0.1)' }}
-        />
-        {error && <p className="text-[11px] text-red-400/70 mb-3 flex items-center gap-1"><AlertCircle className="w-3 h-3" /> Invalid key</p>}
-        <button onClick={submit} disabled={loading || !key}
-          className="w-full py-3 text-[10px] uppercase tracking-[0.2em] font-bold disabled:opacity-30"
+        <p className="text-xs text-white/30 font-light text-center mb-6">Connect your admin wallet to access the NFT claims dashboard.</p>
+        {error && <p className="text-[11px] text-red-400/70 mb-4 flex items-center gap-1.5"><AlertCircle className="w-3 h-3" /> {error}</p>}
+        <button onClick={authenticate} disabled={loading}
+          className="w-full py-3.5 text-[10px] uppercase tracking-[0.2em] font-bold disabled:opacity-30 flex items-center justify-center gap-2"
           style={{ background: 'linear-gradient(135deg, #D4AF37, #B8941F)', color: '#000' }}>
-          {loading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Authenticate'}
+          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Connect Keplr Wallet'}
         </button>
       </div>
     </div>
@@ -352,6 +361,7 @@ export default function NftAdminPage() {
   const toggleAll = () => setSelected(s => s.length === claims.length ? [] : claims.map(c => c.id));
 
   if (!authed) return <AuthGate onAuth={() => setAuthed(true)} />;
+  // Note: useKeplrWallet imported but wallet state managed by AuthGate directly
 
   return (
     <main className="flex-1" style={{ background: '#050505' }}>
