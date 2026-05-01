@@ -595,6 +595,147 @@ interface Proposal {
   isActive: boolean;
 }
 
+/* ══════════════════════════════════════
+   BATCH OPERATIONS
+   ══════════════════════════════════════ */
+
+function BatchOperations({ token, onDone }: { token: string; onDone?: () => void }) {
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<string | null>(null);
+  const [txHash, setTxHash] = useState('');
+  const [ethAddresses, setEthAddresses] = useState('');
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [approvedCount, setApprovedCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    apiCall('/admin/stats', token).then((s) => setApprovedCount(s?.approved ?? 0)).catch(() => {});
+  }, [token, result]);
+
+  const handleBatchComplete = async () => {
+    setConfirmOpen(false);
+    setLoading(true);
+    setResult(null);
+    try {
+      const data = await apiCall('/admin/claims/batch-complete', token, {
+        method: 'POST',
+        body: JSON.stringify({ fromStatus: 'approved', txHash: txHash || undefined }),
+      });
+      setResult(`✅ ${data.completed} claims marked as completed` + (data.skipped ? ` (${data.skipped} skipped)` : ''));
+      onDone?.();
+    } catch (e: any) {
+      setResult(`❌ Error: ${e.message}`);
+    }
+    setLoading(false);
+  };
+
+  const handleBatchTxHash = async () => {
+    if (!txHash || !ethAddresses.trim()) return;
+    setLoading(true);
+    setResult(null);
+    try {
+      const addresses = ethAddresses.trim().split('\n').map((a) => a.trim()).filter(Boolean);
+      const data = await apiCall('/admin/claims/batch-txhash', token, {
+        method: 'POST',
+        body: JSON.stringify({ txHash, ethAddresses: addresses }),
+      });
+      setResult(`✅ TX hash set for ${data.updated} claims`);
+      onDone?.();
+    } catch (e: any) {
+      setResult(`❌ Error: ${e.message}`);
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="glass-panel p-6">
+      <h2 className="text-xs uppercase tracking-[0.2em] text-gray-400 mb-6 flex items-center gap-2">
+        <Check className="w-4 h-4" /> Batch Operations
+      </h2>
+
+      <div className="space-y-6">
+        {/* Complete All Approved */}
+        <div className="border border-white/10 p-4 space-y-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <p className="text-sm text-white">Complete All Approved Claims</p>
+              <p className="text-[10px] text-gray-500 mt-1">
+                {approvedCount !== null ? `${approvedCount} approved claims pending completion` : 'Loading...'}
+              </p>
+            </div>
+          </div>
+          <input
+            type="text"
+            value={txHash}
+            onChange={(e) => setTxHash(e.target.value)}
+            placeholder="TX Hash (optional — applied to all)"
+            className="w-full bg-transparent border border-white/10 py-2 px-3 text-sm font-mono text-white placeholder-gray-700 focus:outline-none focus:border-white/30"
+          />
+          <button
+            onClick={() => setConfirmOpen(true)}
+            disabled={loading || approvedCount === 0}
+            className="px-6 py-2 bg-white text-black text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-gray-200 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Processing...' : 'Complete All Approved'}
+          </button>
+        </div>
+
+        {/* Set TX Hash by ETH addresses */}
+        <div className="border border-white/10 p-4 space-y-4">
+          <p className="text-sm text-white">Set TX Hash for Specific Wallets</p>
+          <input
+            type="text"
+            value={txHash}
+            onChange={(e) => setTxHash(e.target.value)}
+            placeholder="TX Hash"
+            className="w-full bg-transparent border border-white/10 py-2 px-3 text-sm font-mono text-white placeholder-gray-700 focus:outline-none focus:border-white/30"
+          />
+          <textarea
+            value={ethAddresses}
+            onChange={(e) => setEthAddresses(e.target.value)}
+            placeholder="ETH addresses (one per line)"
+            rows={4}
+            className="w-full bg-transparent border border-white/10 py-2 px-3 text-sm font-mono text-white placeholder-gray-700 focus:outline-none focus:border-white/30 resize-none"
+          />
+          <button
+            onClick={handleBatchTxHash}
+            disabled={loading || !txHash || !ethAddresses.trim()}
+            className="px-6 py-2 border border-white/20 text-white text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Processing...' : 'Set TX Hash'}
+          </button>
+        </div>
+
+        {result && (
+          <div className={`p-3 border text-sm ${result.startsWith('✅') ? 'border-green-900/30 bg-green-900/10 text-green-400' : 'border-red-900/30 bg-red-900/10 text-red-400'}`}>
+            {result}
+          </div>
+        )}
+      </div>
+
+      {/* Confirm Modal */}
+      {confirmOpen && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[100]" onClick={() => setConfirmOpen(false)}>
+          <div className="glass-panel p-8 max-w-md m-4" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-serif text-white mb-4">Confirm Batch Complete</h3>
+            <p className="text-sm text-gray-400 mb-6">
+              This will mark <strong className="text-white">{approvedCount}</strong> approved claims as completed.
+              {txHash && <><br />TX Hash: <code className="text-xs">{txHash.slice(0, 20)}...</code></>}
+            </p>
+            <div className="flex gap-3">
+              <button onClick={() => setConfirmOpen(false)} className="flex-1 py-3 border border-white/20 text-white text-xs uppercase tracking-widest hover:bg-white/10 transition-colors">
+                Cancel
+              </button>
+              <button onClick={handleBatchComplete} className="flex-1 py-3 bg-white text-black text-xs uppercase tracking-widest font-bold hover:bg-gray-200 transition-colors">
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function GovernanceAdmin({ token }: { token: string }) {
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [editModal, setEditModal] = useState<Proposal | 'new' | null>(null);
@@ -902,6 +1043,7 @@ export default function AdminPage() {
         ) : (
           <div className="space-y-8 animate-fade-in">
             <StatsGrid token={auth.token} />
+            <BatchOperations token={auth.token} />
             <ImportSection token={auth.token} />
             <TeamWalletsSection token={auth.token} />
             <ClaimsTable token={auth.token} />

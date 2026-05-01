@@ -709,14 +709,23 @@ export default function ClaimPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [claimId, setClaimId] = useState<string | null>(null);
   const [specialStatus, setSpecialStatus] = useState<SpecialStatus>(null);
+  const [claimsPaused, setClaimsPaused] = useState(false);
 
-  const stepTitle = specialStatus
-    ? { completed: 'Claim validé', pending: 'Claim en cours de validation', approved: 'Migration approuvée', rejected: 'Migration refusée' }[specialStatus]
-    : STEP_TITLES[step];
+  useEffect(() => {
+    api.getConfig().then((cfg) => setClaimsPaused(cfg.claimsPaused)).catch(() => {});
+  }, []);
 
-  const stepIndicator = specialStatus
-    ? { completed: 'Migration Complete', pending: 'Claim Submitted', approved: 'Claim Approved', rejected: 'Claim Rejected' }[specialStatus]
-    : `Step 0${Math.min(step, 4)} / 04`;
+  const stepTitle = claimsPaused && !specialStatus
+    ? 'Distribution in Progress'
+    : specialStatus
+      ? { completed: 'Claim validé', pending: 'Claim en cours de validation', approved: 'Migration approuvée', rejected: 'Migration refusée' }[specialStatus]
+      : STEP_TITLES[step];
+
+  const stepIndicator = claimsPaused && !specialStatus
+    ? 'Claims Paused'
+    : specialStatus
+      ? { completed: 'Migration Complete', pending: 'Claim Submitted', approved: 'Claim Approved', rejected: 'Claim Rejected' }[specialStatus]
+      : `Step 0${Math.min(step, 4)} / 04`;
 
   /* ─── Keplr connect & eligibility ─── */
   const connectAndCheck = useCallback(async () => {
@@ -805,6 +814,21 @@ export default function ClaimPage() {
 
   /* ─── render step content ─── */
   const renderStepContent = () => {
+    if (claimsPaused && !specialStatus) {
+      return (
+        <div className="flex flex-col items-center justify-center text-center h-full py-8 px-4 animate-fade-in">
+          <div className="w-16 h-16 border border-white/20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <ShieldCheck className="w-6 h-6 text-white" />
+          </div>
+          <h3 className="text-lg font-serif text-white mb-4">Claims Temporarily Paused</h3>
+          <p className="text-sm text-gray-400 leading-relaxed max-w-md mb-6">
+            The claim period has ended and token distribution is currently in progress.
+            You can still check the status of your existing claim below.
+          </p>
+          <div className="w-12 h-[1px] bg-white/20" />
+        </div>
+      );
+    }
     if (specialStatus) {
       const map: Record<string, { label: string; color: string; extra: string }> = {
         completed: { label: 'Complété', color: 'bg-green-500', extra: 'Votre migration a été validée. Vos tokens ERC-20 XKI ont été distribués.' },

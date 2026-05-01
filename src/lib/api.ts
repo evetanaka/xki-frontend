@@ -42,6 +42,23 @@ export const api = {
   verifyClaim: (id: number) => request<any>(`/admin/claims/${id}/verify`, { method: 'POST' }),
   deleteClaim: (id: number) => request<any>(`/admin/claims/${id}`, { method: 'DELETE' }),
 
+  // Config
+  getConfig: () => request<{ claimsPaused: boolean; deadline?: string }>('/config'),
+
+  // Batch admin
+  batchComplete: (data: { fromStatus?: string; ids?: number[]; txHash?: string }) =>
+    request<any>('/admin/claims/batch-complete', {
+      method: 'POST',
+      body: JSON.stringify(data),
+      headers: { 'Content-Type': 'application/json' },
+    }),
+  batchTxHash: (data: { txHash: string; ethAddresses: string[] }) =>
+    request<any>('/admin/claims/batch-txhash', {
+      method: 'POST',
+      body: JSON.stringify(data),
+      headers: { 'Content-Type': 'application/json' },
+    }),
+
   // NFT Claim
   getNftConfig: () => request<any>('/nft/config'),
   getNftPortfolio: (kiAddress: string) => request<any>(`/nft/portfolio/${kiAddress}`),
