@@ -8,7 +8,6 @@ import {
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver';
 import { useStakingSimulator } from '../hooks/useStakingSimulator';
 import { MULTIPLIERS, DURATIONS, TIER_NAMES, TIER_EMOJIS } from '../lib/constants';
-import ComingSoonModal from '../components/ComingSoonModal';
 import WalletButton from '../components/WalletButton';
 import {
   XKI_TOKEN, XKI_STAKING, XKI_REWARD_DISTRIBUTOR,
@@ -49,7 +48,6 @@ function Pulse({ className = '' }: { className?: string }) {
 }
 
 export default function StakePage() {
-  const [showComingSoon, setShowComingSoon] = useState(true);
   const [showHardUnstakeModal, setShowHardUnstakeModal] = useState(false);
   const [showCooldownModal, setShowCooldownModal] = useState(false);
   const [selectedStakeId, setSelectedStakeId] = useState<bigint | null>(null);
@@ -91,17 +89,24 @@ export default function StakePage() {
   const { isSuccess: hardSuccess } = useWaitForTransactionReceipt({ hash: hardTxHash });
   const { isSuccess: claimSuccess } = useWaitForTransactionReceipt({ hash: claimTxHash });
 
-  // After approve succeeds, do the stake
+  // After approve succeeds, auto-trigger stake
   useEffect(() => {
-    if (approveSuccess && stakeAmount) {
-      refetchAllowance();
+    if (approveSuccess && stakeAmount && address) {
+      const amount = parseUnits(stakeAmount, 18);
+      stake({
+        address: XKI_STAKING,
+        abi: xkiStakingAbi,
+        functionName: 'stake',
+        args: [amount, stakeTier],
+      });
     }
   }, [approveSuccess]);
 
-  // Refetch after stake/unstake
+  // Refetch after stake/unstake/claim
   useEffect(() => {
     if (stakeSuccess || cooldownSuccess || hardSuccess || claimSuccess) {
       refetchPositions();
+      refetchAllowance();
     }
   }, [stakeSuccess, cooldownSuccess, hardSuccess, claimSuccess]);
 
@@ -144,19 +149,6 @@ export default function StakePage() {
       });
     }
   };
-
-  // After approval, auto-stake
-  useEffect(() => {
-    if (approveSuccess && stakeAmount && address) {
-      const amount = parseUnits(stakeAmount, 18);
-      stake({
-        address: XKI_STAKING,
-        abi: xkiStakingAbi,
-        functionName: 'stake',
-        args: [amount, stakeTier],
-      });
-    }
-  }, [approveSuccess]);
 
   const handleClaimAll = () => {
     if (!rewardTokens || rewardTokens.length === 0) return;
@@ -226,7 +218,7 @@ export default function StakePage() {
 
   return (
     <div className="bg-[#050505]">
-      <ComingSoonModal isOpen={showComingSoon} onClose={() => setShowComingSoon(false)} />
+      {/* Coming soon modal removed */}
       {/* Header */}
       <section className="pt-28 pb-8 px-6 md:px-8">
         <div className="max-w-6xl mx-auto">
