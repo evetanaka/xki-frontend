@@ -1,6 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { WagmiProvider } from 'wagmi';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { config } from './config/wagmi';
 import App from './App';
 import HomePage from './pages/HomePage';
 import StakePage from './pages/StakePage';
@@ -11,6 +14,8 @@ import NftClaimPage from './pages/NftClaimPage';
 import NftAdminPage from './pages/NftAdminPage';
 import AdminNav from './components/admin/AdminNav';
 import './index.css';
+
+const queryClient = new QueryClient();
 
 function AdminWrapper({ children }: { children: React.ReactNode }) {
   return (
@@ -23,24 +28,25 @@ function AdminWrapper({ children }: { children: React.ReactNode }) {
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <BrowserRouter>
-      <Routes>
-        {/* Pages with shared Nav + Footer */}
-        <Route element={<App />}>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/stake" element={<StakePage />} />
-          <Route path="/guide" element={<GuidePage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Route>
-        {/* Claim: shared Nav, custom footer (FooterStats inside ClaimPage) */}
-        <Route element={<App navOnly />}>
-          <Route path="/claim" element={<ClaimPage />} />
-          <Route path="/nft-claim" element={<NftClaimPage />} />
-        </Route>
-        {/* Admin: completely standalone layout */}
-        <Route path="/admin" element={<AdminWrapper><AdminPage /></AdminWrapper>} />
-        <Route path="/admin/nft" element={<AdminWrapper><NftAdminPage /></AdminWrapper>} />
-      </Routes>
-    </BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <WagmiProvider config={config}>
+        <BrowserRouter>
+          <Routes>
+            <Route element={<App />}>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/stake" element={<StakePage />} />
+              <Route path="/guide" element={<GuidePage />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Route>
+            <Route element={<App navOnly />}>
+              <Route path="/claim" element={<ClaimPage />} />
+              <Route path="/nft-claim" element={<NftClaimPage />} />
+            </Route>
+            <Route path="/admin" element={<AdminWrapper><AdminPage /></AdminWrapper>} />
+            <Route path="/admin/nft" element={<AdminWrapper><NftAdminPage /></AdminWrapper>} />
+          </Routes>
+        </BrowserRouter>
+      </WagmiProvider>
+    </QueryClientProvider>
   </React.StrictMode>
 );
