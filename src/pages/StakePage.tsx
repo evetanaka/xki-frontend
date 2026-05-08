@@ -83,11 +83,11 @@ export default function StakePage() {
   const { writeContract: claimRewards, data: claimTxHash, isPending: claiming } = useWriteContract();
   const { writeContract: releaseVesting, data: releaseTxHash, isPending: releasing } = useWriteContract();
 
-  const { isSuccess: approveSuccess } = useWaitForTransactionReceipt({ hash: approveTxHash });
-  const { isSuccess: stakeSuccess } = useWaitForTransactionReceipt({ hash: stakeTxHash });
-  const { isSuccess: cooldownSuccess } = useWaitForTransactionReceipt({ hash: cooldownTxHash });
-  const { isSuccess: hardSuccess } = useWaitForTransactionReceipt({ hash: hardTxHash });
-  const { isSuccess: claimSuccess } = useWaitForTransactionReceipt({ hash: claimTxHash });
+  const { isSuccess: approveSuccess, isLoading: approveConfirming } = useWaitForTransactionReceipt({ hash: approveTxHash });
+  const { isSuccess: stakeSuccess, isLoading: stakeConfirming } = useWaitForTransactionReceipt({ hash: stakeTxHash });
+  const { isSuccess: cooldownSuccess, isLoading: cooldownConfirming } = useWaitForTransactionReceipt({ hash: cooldownTxHash });
+  const { isSuccess: hardSuccess, isLoading: hardConfirming } = useWaitForTransactionReceipt({ hash: hardTxHash });
+  const { isSuccess: claimSuccess, isLoading: claimConfirming } = useWaitForTransactionReceipt({ hash: claimTxHash });
 
   // After approve succeeds, auto-trigger stake
   useEffect(() => {
@@ -638,11 +638,11 @@ export default function StakePage() {
                     </div>
                     <button
                       onClick={handleClaimAll}
-                      disabled={claiming}
+                      disabled={claiming || claimConfirming}
                       className="w-full py-3 bg-white text-black text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 disabled:bg-gray-900 disabled:text-gray-600 disabled:cursor-not-allowed"
                     >
                       <Download className="w-3 h-3" />
-                      {claiming ? 'Claiming...' : 'Claim All Rewards'}
+                      {claiming ? 'Confirm in wallet...' : claimConfirming ? 'Claiming ⏳' : 'Claim All Rewards'}
                     </button>
                   </>
                 ) : (
@@ -719,10 +719,10 @@ export default function StakePage() {
 
                 <button
                   onClick={handleStake}
-                  disabled={!stakeAmount || Number(stakeAmount) <= 0 || approving || staking}
+                  disabled={!stakeAmount || Number(stakeAmount) <= 0 || approving || approveConfirming || staking || stakeConfirming}
                   className="w-full py-4 bg-white text-black text-xs font-bold uppercase tracking-[0.2em] hover:bg-gray-200 transition-colors flex items-center justify-center gap-3 disabled:bg-gray-900 disabled:text-gray-600 disabled:cursor-not-allowed"
                 >
-                  {approving ? 'Approving...' : staking ? 'Staking...' : stakeAmount && Number(stakeAmount) > 0
+                  {approving ? 'Confirm in wallet...' : approveConfirming ? 'Approving ⏳' : staking ? 'Confirm in wallet...' : stakeConfirming ? 'Staking ⏳' : stakeAmount && Number(stakeAmount) > 0
                     ? (allowance !== undefined && allowance < parseUnits(stakeAmount || '0', 18) ? `Approve & Stake ${Number(stakeAmount).toLocaleString()} XKI` : `Stake ${Number(stakeAmount).toLocaleString()} XKI`)
                     : 'Enter Amount to Stake'}
                 </button>
@@ -761,8 +761,8 @@ export default function StakePage() {
             </div>
             <div className="flex gap-3">
               <button onClick={() => setShowHardUnstakeModal(false)} className="flex-1 py-3 border border-white/20 text-white text-[10px] font-bold uppercase tracking-widest hover:bg-white/5 transition-colors">Cancel</button>
-              <button onClick={handleHardUnstake} disabled={hardUnstaking} className="flex-1 py-3 bg-red-500/20 border border-red-500/30 text-red-400 text-[10px] font-bold uppercase tracking-widest hover:bg-red-500/30 transition-colors disabled:opacity-50">
-                {hardUnstaking ? 'Processing...' : 'Burn 10% & Withdraw'}
+              <button onClick={handleHardUnstake} disabled={hardUnstaking || hardConfirming} className="flex-1 py-3 bg-red-500/20 border border-red-500/30 text-red-400 text-[10px] font-bold uppercase tracking-widest hover:bg-red-500/30 transition-colors disabled:opacity-50">
+                {hardUnstaking ? 'Confirm in wallet...' : hardConfirming ? 'Processing ⏳' : 'Burn 10% & Withdraw'}
               </button>
             </div>
           </div>
@@ -801,10 +801,10 @@ export default function StakePage() {
               <button onClick={() => setShowCooldownModal(false)} className="flex-1 py-3 border border-white/20 text-white text-[10px] font-bold uppercase tracking-widest hover:bg-white/5 transition-colors">Cancel</button>
               <button
                 onClick={() => { if (selectedStakeId !== null) { handleRequestUnstake(selectedStakeId); setShowCooldownModal(false); } }}
-                disabled={requestingUnstake}
+                disabled={requestingUnstake || cooldownConfirming}
                 className="flex-1 py-3 bg-white text-black text-[10px] font-bold uppercase tracking-widest hover:bg-gray-200 transition-colors disabled:opacity-50"
               >
-                {requestingUnstake ? 'Processing...' : 'Start Cooldown'}
+                {requestingUnstake ? 'Confirm in wallet...' : cooldownConfirming ? 'Processing ⏳' : 'Start Cooldown'}
               </button>
             </div>
           </div>
