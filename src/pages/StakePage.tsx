@@ -131,22 +131,33 @@ export default function StakePage() {
   // Stake action
   const handleStake = () => {
     if (!stakeAmount || !address) return;
-    const amount = parseUnits(stakeAmount, 18);
-    const needsApproval = !allowance || allowance < amount;
-    if (needsApproval) {
-      approve({
-        address: XKI_TOKEN,
-        abi: xkiTokenAbi,
-        functionName: 'approve',
-        args: [XKI_STAKING, amount],
-      });
-    } else {
-      stake({
-        address: XKI_STAKING,
-        abi: xkiStakingAbi,
-        functionName: 'stake',
-        args: [amount, stakeTier],
-      });
+    try {
+      const amount = parseUnits(stakeAmount, 18);
+      const needsApproval = allowance === undefined || allowance < amount;
+      console.log('[Stake] amount:', amount.toString(), 'tier:', stakeTier, 'allowance:', allowance?.toString(), 'needsApproval:', needsApproval);
+      if (needsApproval) {
+        approve({
+          address: XKI_TOKEN,
+          abi: xkiTokenAbi,
+          functionName: 'approve',
+          args: [XKI_STAKING, amount],
+        }, {
+          onError: (err) => console.error('[Approve Error]', err),
+          onSuccess: (hash) => console.log('[Approve TX]', hash),
+        });
+      } else {
+        stake({
+          address: XKI_STAKING,
+          abi: xkiStakingAbi,
+          functionName: 'stake',
+          args: [amount, stakeTier],
+        }, {
+          onError: (err) => console.error('[Stake Error]', err),
+          onSuccess: (hash) => console.log('[Stake TX]', hash),
+        });
+      }
+    } catch (err) {
+      console.error('[handleStake Error]', err);
     }
   };
 
