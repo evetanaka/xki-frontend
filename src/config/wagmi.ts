@@ -1,14 +1,30 @@
-import { createConfig, http } from 'wagmi'
+import { createWeb3Modal, defaultWagmiConfig } from '@web3modal/wagmi'
 import { mainnet } from 'wagmi/chains'
-import { injected, walletConnect } from 'wagmi/connectors'
+import { http } from 'wagmi'
 
-export const config = createConfig({
-  chains: [mainnet],
-  connectors: [
-    injected(),
-    walletConnect({ projectId: 'YOUR_PROJECT_ID' }),
-  ],
-  transports: {
-    [mainnet.id]: http('https://mainnet.infura.io/v3/0273686a0b3d43e2af0a5e32e4aa0e7c'),
+const projectId = 'e9d25f804bc56e498f7498fd3145200e'
+
+const metadata = {
+  name: 'Ki Foundation',
+  description: 'XKI Staking & Vesting',
+  url: 'https://foundation.ki',
+  icons: ['https://foundation.ki/favicon.ico'],
+}
+
+const chains = [mainnet] as const
+
+export const config = defaultWagmiConfig({
+  chains,
+  projectId,
+  metadata,
+})
+
+createWeb3Modal({
+  wagmiConfig: config,
+  projectId,
+  themeMode: 'dark',
+  themeVariables: {
+    '--w3m-accent': '#ffffff',
+    '--w3m-border-radius-master': '0px',
   },
 })

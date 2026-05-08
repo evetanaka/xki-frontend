@@ -376,7 +376,7 @@ export default function StakePage() {
                 <Wallet className="w-6 h-6 text-gray-500" />
               </div>
               <h3 className="text-xl font-serif text-white mb-3">Connect Your Wallet</h3>
-              <p className="text-xs text-gray-500 font-light mb-8">Connect with MetaMask or any EVM wallet to view your positions, stake, and claim rewards.</p>
+              <p className="text-xs text-gray-500 font-light mb-8">Connect with MetaMask, Keplr, or any wallet to view your positions, stake, and claim rewards.</p>
               <div className="flex justify-center">
                 <WalletButton />
               </div>
