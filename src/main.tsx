@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { WagmiProvider } from 'wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { config } from './config/wagmi';
+import Web3ModalProvider from './components/Web3ModalProvider';
 import App from './App';
 import HomePage from './pages/HomePage';
 import StakePage from './pages/StakePage';
@@ -30,22 +31,24 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <WagmiProvider config={config}>
-        <BrowserRouter>
-          <Routes>
-            <Route element={<App />}>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/stake" element={<StakePage />} />
-              <Route path="/guide" element={<GuidePage />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Route>
-            <Route element={<App navOnly />}>
-              <Route path="/claim" element={<ClaimPage />} />
-              <Route path="/nft-claim" element={<NftClaimPage />} />
-            </Route>
-            <Route path="/admin" element={<AdminWrapper><AdminPage /></AdminWrapper>} />
-            <Route path="/admin/nft" element={<AdminWrapper><NftAdminPage /></AdminWrapper>} />
-          </Routes>
-        </BrowserRouter>
+        <Web3ModalProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route element={<App />}>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/stake" element={<StakePage />} />
+                <Route path="/guide" element={<GuidePage />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Route>
+              <Route element={<App navOnly />}>
+                <Route path="/claim" element={<ClaimPage />} />
+                <Route path="/nft-claim" element={<NftClaimPage />} />
+              </Route>
+              <Route path="/admin" element={<AdminWrapper><AdminPage /></AdminWrapper>} />
+              <Route path="/admin/nft" element={<AdminWrapper><NftAdminPage /></AdminWrapper>} />
+            </Routes>
+          </BrowserRouter>
+        </Web3ModalProvider>
       </WagmiProvider>
     </QueryClientProvider>
   </React.StrictMode>
