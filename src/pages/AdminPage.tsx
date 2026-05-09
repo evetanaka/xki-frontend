@@ -1021,21 +1021,7 @@ export default function AdminPage() {
       <div className="fixed inset-0 z-0 pointer-events-none opacity-20"
         style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)', backgroundSize: '100px 100px' }} />
 
-      {/* Nav bar */}
-      <nav className="relative z-10 w-full px-8 py-6 flex justify-between items-center border-b border-white/10">
-        <a href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-          <div className="w-8 h-8 bg-white text-black flex items-center justify-center font-serif font-bold text-lg">K</div>
-          <span className="text-sm tracking-[0.2em] uppercase font-light text-gray-400">Foundation</span>
-        </a>
-        <div className="flex items-center gap-6">
-          <span className="text-[10px] uppercase tracking-widest text-gray-500">Admin Dashboard</span>
-          <div className={`px-3 py-1 border text-[10px] uppercase tracking-widest transition-all ${
-            auth ? 'text-emerald-400 border-emerald-900 bg-emerald-900/10' : 'text-gray-400 border-white/20'
-          }`}>
-            {auth ? truncate(auth.address, 16) : 'Disconnected'}
-          </div>
-        </div>
-      </nav>
+      {/* Nav bar removed — handled by AdminWrapper (Nav + AdminNav) */}
 
       <main className="relative z-10 max-w-7xl mx-auto px-6 py-10 space-y-8">
         {!auth ? (

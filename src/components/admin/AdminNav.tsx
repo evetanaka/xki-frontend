@@ -13,22 +13,40 @@ export default function AdminNav() {
   const location = useLocation();
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
+  const [keplrAddr, setKeplrAddr] = useState('');
 
   useEffect(() => {
-    try {
-      const stored = sessionStorage.getItem('xki_admin_auth');
-      if (stored) {
-        const data = JSON.parse(stored);
-        if (data.address === ADMIN_WALLET && data.token) setIsAdmin(true);
+    const check = () => {
+      try {
+        const stored = sessionStorage.getItem('xki_admin_auth');
+        if (stored) {
+          const data = JSON.parse(stored);
+          if (data.address === ADMIN_WALLET && data.token) {
+            setIsAdmin(true);
+            setKeplrAddr(data.address);
+          } else {
+            setIsAdmin(false);
+            setKeplrAddr('');
+          }
+        } else {
+          setIsAdmin(false);
+          setKeplrAddr('');
+        }
+      } catch {
+        setIsAdmin(false);
       }
-    } catch {}
+    };
+    check();
+    // Re-check when storage changes (auth from AdminPage)
+    const interval = setInterval(check, 1000);
+    return () => clearInterval(interval);
   }, []);
 
   if (!isAdmin) return null;
 
   return (
     <nav className="border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-      <div className="max-w-6xl mx-auto px-6 flex items-center justify-between h-14">
+      <div className="max-w-6xl mx-auto px-6 flex items-center justify-between h-12">
         <div className="flex items-center gap-6">
           <span className="text-sm font-serif text-white tracking-wide">Admin</span>
           <div className="flex gap-1">
@@ -51,12 +69,11 @@ export default function AdminNav() {
             })}
           </div>
         </div>
-        <button
-          onClick={() => window.location.href = '/'}
-          className="text-[10px] uppercase tracking-[0.15em] text-white/20 hover:text-white/40 font-light transition-colors"
-        >
-          ← Site
-        </button>
+        {keplrAddr && (
+          <div className="px-3 py-1 border text-[10px] uppercase tracking-widest text-emerald-400 border-emerald-900 bg-emerald-900/10">
+            {keplrAddr.slice(0, 8)}…{keplrAddr.slice(-6)}
+          </div>
+        )}
       </div>
     </nav>
   );
