@@ -27,8 +27,11 @@ import {
 
 // --- Helpers ---
 
+const MAX_UINT256 = 2n ** 256n - 1n
+
 function fmt(value: bigint | undefined, decimals: number, dp = 2): string {
   if (value === undefined) return '—'
+  if (value >= MAX_UINT256 / 2n) return 'Unlimited'
   const str = formatUnits(value, decimals)
   return new Intl.NumberFormat('en-US', { minimumFractionDigits: dp, maximumFractionDigits: dp }).format(Number(str))
 }
