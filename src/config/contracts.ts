@@ -1,6 +1,7 @@
 export const XKI_TOKEN = '0xeA8704FA35aAed86Bb19c2bF353F26957513b621' as const
 export const XKI_STAKING = '0x2f2950e73d8478cB289F968b5cB015C82F280De5' as const
 export const XKI_REWARD_DISTRIBUTOR = '0x22440664CF993bC45a2465bF170Ca2F861217eD8' as const
+export const TREASURY_SAFE = '0xD4A52b87248b774B388dB6f6011c062f0BD0Acf5' as const
 
 export const VESTING_CONTRACTS = [
   '0x81DD2709609c64300B3EB2c59489144bDab8bf99',
@@ -16,6 +17,7 @@ export const xkiTokenAbi = [
   { type: 'function', name: 'allowance', stateMutability: 'view', inputs: [{ name: 'owner', type: 'address' }, { name: 'spender', type: 'address' }], outputs: [{ name: '', type: 'uint256' }] },
   { type: 'function', name: 'approve', stateMutability: 'nonpayable', inputs: [{ name: 'spender', type: 'address' }, { name: 'amount', type: 'uint256' }], outputs: [{ name: '', type: 'bool' }] },
   { type: 'function', name: 'totalSupply', stateMutability: 'view', inputs: [], outputs: [{ name: '', type: 'uint256' }] },
+  { type: 'function', name: 'transfer', stateMutability: 'nonpayable', inputs: [{ name: 'to', type: 'address' }, { name: 'amount', type: 'uint256' }], outputs: [{ name: '', type: 'bool' }] },
 ] as const
 
 export const xkiStakingAbi = [
@@ -52,6 +54,12 @@ export const xkiRewardDistributorAbi = [
   { type: 'function', name: 'earned', stateMutability: 'view', inputs: [{ name: 'user', type: 'address' }, { name: 'token', type: 'address' }], outputs: [{ name: '', type: 'uint256' }] },
   { type: 'function', name: 'getRewardTokens', stateMutability: 'view', inputs: [], outputs: [{ name: '', type: 'address[]' }] },
   { type: 'function', name: 'claimRewards', stateMutability: 'nonpayable', inputs: [{ name: 'tokens', type: 'address[]' }], outputs: [] },
+  { type: 'function', name: 'rewardState', stateMutability: 'view', inputs: [{ name: 'token', type: 'address' }], outputs: [{ name: 'rewardRate', type: 'uint256' }, { name: 'periodFinish', type: 'uint256' }, { name: 'rewardPerTokenStored', type: 'uint256' }, { name: 'lastUpdateTime', type: 'uint256' }] },
+  { type: 'function', name: 'treasury', stateMutability: 'view', inputs: [], outputs: [{ name: '', type: 'address' }] },
+  { type: 'function', name: 'feeRouters', stateMutability: 'view', inputs: [{ name: '', type: 'address' }], outputs: [{ name: '', type: 'bool' }] },
+  { type: 'function', name: 'addRewardToken', stateMutability: 'nonpayable', inputs: [{ name: 'token', type: 'address' }], outputs: [] },
+  { type: 'function', name: 'notifyReward', stateMutability: 'nonpayable', inputs: [{ name: 'token', type: 'address' }, { name: 'amount', type: 'uint256' }, { name: 'duration', type: 'uint256' }], outputs: [] },
+  { type: 'function', name: 'setFeeRouter', stateMutability: 'nonpayable', inputs: [{ name: 'router', type: 'address' }, { name: 'approved', type: 'bool' }], outputs: [] },
 ] as const
 
 export const vestingAbi = [

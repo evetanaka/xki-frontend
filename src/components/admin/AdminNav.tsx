@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 const TABS = [
   { path: '/admin', label: '$XKI Claims' },
   { path: '/admin/nft', label: 'NFT Claims' },
+  { path: '/admin/rewards', label: 'Rewards' },
 ];
 
 export default function AdminNav() {

@@ -13,6 +13,7 @@ import GuidePage from './pages/GuidePage';
 import AdminPage from './pages/AdminPage';
 import NftClaimPage from './pages/NftClaimPage';
 import NftAdminPage from './pages/NftAdminPage';
+import AdminRewardsPage from './pages/AdminRewardsPage';
 import AdminNav from './components/admin/AdminNav';
 import './index.css';
 
@@ -46,6 +47,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
               </Route>
               <Route path="/admin" element={<AdminWrapper><AdminPage /></AdminWrapper>} />
               <Route path="/admin/nft" element={<AdminWrapper><NftAdminPage /></AdminWrapper>} />
+              <Route path="/admin/rewards" element={<AdminWrapper><AdminRewardsPage /></AdminWrapper>} />
             </Routes>
           </BrowserRouter>
         </Web3ModalProvider>
