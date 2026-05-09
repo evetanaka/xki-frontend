@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { formatUnits, parseUnits, type Address } from 'viem'
-import { Copy, Check, ChevronDown, ChevronUp, ExternalLink, AlertTriangle, Search } from 'lucide-react'
+import { Copy, Check, ChevronDown, ChevronUp, ExternalLink, AlertTriangle, Search, Download } from 'lucide-react'
 import {
   useRewardTokenList,
   useTVL,
@@ -322,8 +322,16 @@ export default function AdminRewardsPage() {
                     </div>
                   ))}
                   <div className="flex gap-3 pt-2">
-                    <button onClick={() => copy(distCalldata.json, 'batch')} className="bg-white text-black text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-gray-200 px-4 py-2 transition-colors inline-flex items-center gap-1">
-                      {copied === 'batch' ? <><Check size={10} /> Copied</> : <><Copy size={10} /> Copy Safe Batch JSON</>}
+                    <button onClick={() => {
+                      const blob = new Blob([distCalldata.json], { type: 'application/json' })
+                      const url = URL.createObjectURL(blob)
+                      const a = document.createElement('a')
+                      a.href = url
+                      a.download = `xki-distribution-${Date.now()}.json`
+                      a.click()
+                      URL.revokeObjectURL(url)
+                    }} className="bg-white text-black text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-gray-200 px-4 py-2 transition-colors inline-flex items-center gap-1">
+                      <Download size={10} /> Download Safe Batch JSON
                     </button>
                     <a href={safeUrl} target="_blank" rel="noopener noreferrer" className="border border-white/20 text-gray-400 text-[10px] uppercase tracking-widest hover:text-white hover:border-white/40 px-4 py-2 transition-all inline-flex items-center gap-1">
                       Open Safe <ExternalLink size={10} />
