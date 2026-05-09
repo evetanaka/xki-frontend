@@ -1,4 +1,7 @@
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+
+const ADMIN_WALLET = 'ki1ypnke0r4uk6u82w4gh73kc5tz0qsn0ahek0653';
 
 const TABS = [
   { path: '/admin', label: '$XKI Claims' },
@@ -9,6 +12,19 @@ const TABS = [
 export default function AdminNav() {
   const location = useLocation();
   const navigate = useNavigate();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    try {
+      const stored = sessionStorage.getItem('xki_admin_auth');
+      if (stored) {
+        const data = JSON.parse(stored);
+        if (data.address === ADMIN_WALLET && data.token) setIsAdmin(true);
+      }
+    } catch {}
+  }, []);
+
+  if (!isAdmin) return null;
 
   return (
     <nav className="border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>

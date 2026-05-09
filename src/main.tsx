@@ -14,6 +14,7 @@ import AdminPage from './pages/AdminPage';
 import NftClaimPage from './pages/NftClaimPage';
 import NftAdminPage from './pages/NftAdminPage';
 import AdminRewardsPage from './pages/AdminRewardsPage';
+import Nav from './components/layout/Nav';
 import AdminNav from './components/admin/AdminNav';
 import './index.css';
 
@@ -22,8 +23,11 @@ const queryClient = new QueryClient();
 function AdminWrapper({ children }: { children: React.ReactNode }) {
   return (
     <div className="bg-[#050505] text-[#E0E0E0] font-sans antialiased selection:bg-white selection:text-black overflow-x-hidden min-h-screen">
-      <AdminNav />
-      {children}
+      <Nav />
+      <div className="pt-[72px]">
+        <AdminNav />
+        {children}
+      </div>
     </div>
   );
 }
