@@ -1,5 +1,5 @@
 import { encodeFunctionData, type Address, type Hex } from 'viem'
-import { xkiTokenAbi, xkiRewardDistributorAbi } from '../config/contracts'
+import { xkiTokenAbi, xkiStakingAbi, xkiRewardDistributorAbi } from '../config/contracts'
 
 export function encodeApprove(spender: Address, amount: bigint): Hex {
   return encodeFunctionData({ abi: xkiTokenAbi, functionName: 'approve', args: [spender, amount] })
@@ -19,6 +19,14 @@ export function encodeSetFeeRouter(router: Address, approved: boolean): Hex {
 
 export function encodeTransfer(to: Address, amount: bigint): Hex {
   return encodeFunctionData({ abi: xkiTokenAbi, functionName: 'transfer', args: [to, amount] })
+}
+
+export function encodeSetRewardDistributor(distributor: Address): Hex {
+  return encodeFunctionData({ abi: xkiStakingAbi, functionName: 'setRewardDistributor', args: [distributor] })
+}
+
+export function encodeUpdateReward(user: Address): Hex {
+  return encodeFunctionData({ abi: xkiRewardDistributorAbi, functionName: 'updateReward', args: [user] })
 }
 
 export interface SafeTx {

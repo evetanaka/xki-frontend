@@ -48,6 +48,8 @@ export const xkiStakingAbi = [
   { type: 'function', name: 'completeUnstake', stateMutability: 'nonpayable', inputs: [{ name: 'stakeId', type: 'uint256' }], outputs: [] },
   { type: 'function', name: 'hardUnstake', stateMutability: 'nonpayable', inputs: [{ name: 'stakeId', type: 'uint256' }], outputs: [] },
   { type: 'function', name: 'stakeFromVesting', stateMutability: 'nonpayable', inputs: [{ name: 'vestingContract', type: 'address' }, { name: 'amount', type: 'uint256' }, { name: 'lockTier', type: 'uint8' }], outputs: [] },
+  { type: 'function', name: 'setRewardDistributor', stateMutability: 'nonpayable', inputs: [{ name: 'distributor', type: 'address' }], outputs: [] },
+  { type: 'function', name: 'rewardDistributor', stateMutability: 'view', inputs: [], outputs: [{ name: '', type: 'address' }] },
 ] as const
 
 export const xkiRewardDistributorAbi = [
@@ -60,6 +62,7 @@ export const xkiRewardDistributorAbi = [
   { type: 'function', name: 'addRewardToken', stateMutability: 'nonpayable', inputs: [{ name: 'token', type: 'address' }], outputs: [] },
   { type: 'function', name: 'notifyReward', stateMutability: 'nonpayable', inputs: [{ name: 'token', type: 'address' }, { name: 'amount', type: 'uint256' }, { name: 'duration', type: 'uint256' }], outputs: [] },
   { type: 'function', name: 'setFeeRouter', stateMutability: 'nonpayable', inputs: [{ name: 'router', type: 'address' }, { name: 'approved', type: 'bool' }], outputs: [] },
+  { type: 'function', name: 'updateReward', stateMutability: 'nonpayable', inputs: [{ name: 'user', type: 'address' }], outputs: [] },
 ] as const
 
 export const vestingAbi = [

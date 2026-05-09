@@ -138,6 +138,14 @@ export function useMultiTreasuryBalance(tokenAddresses: Address[]) {
   })
 }
 
+export function useCurrentRewardDistributor() {
+  return useReadContract({
+    address: XKI_STAKING,
+    abi: xkiStakingAbi,
+    functionName: 'rewardDistributor',
+  })
+}
+
 export function useMultiTreasuryAllowance(tokenAddresses: Address[]) {
   return useReadContracts({
     contracts: tokenAddresses.map((token) => ({

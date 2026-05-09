@@ -10,9 +10,11 @@ import {
   useMultiTreasuryBalance,
   useMultiTreasuryAllowance,
   useEarnedLookup,
+  useCurrentRewardDistributor,
 } from '../hooks/useRewardsAdmin'
 import {
   XKI_TOKEN,
+  XKI_STAKING,
   XKI_REWARD_DISTRIBUTOR,
   TREASURY_SAFE,
 } from '../config/contracts'
@@ -21,6 +23,8 @@ import {
   encodeNotifyReward,
   encodeAddRewardToken,
   encodeSetFeeRouter,
+  encodeSetRewardDistributor,
+  encodeUpdateReward,
   generateSafeBatchJson,
   type SafeTx,
 } from '../lib/calldata'
@@ -67,6 +71,27 @@ function Skeleton() {
   return <div className="h-6 w-24 animate-pulse bg-white/10 rounded" />
 }
 
+function downloadJson(json: string, name: string) {
+  const blob = new Blob([json], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `${name}-${Date.now()}.json`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+function DownloadBatchBtn({ txs, name, label }: { txs: SafeTx[]; name: string; label: string }) {
+  return (
+    <button
+      onClick={() => downloadJson(generateSafeBatchJson(txs), name)}
+      className="bg-white text-black text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-gray-200 px-4 py-2 transition-colors inline-flex items-center gap-1"
+    >
+      <Download size={10} /> {label}
+    </button>
+  )
+}
+
 // --- Page ---
 
 export default function AdminRewardsPage() {
@@ -77,6 +102,7 @@ export default function AdminRewardsPage() {
   const { data: rewardStates } = useMultiRewardState(addresses)
   const { data: balances } = useMultiTreasuryBalance(addresses)
   const { data: allowances } = useMultiTreasuryAllowance(addresses)
+  const { data: currentDistributor } = useCurrentRewardDistributor()
 
   const { copied, copy } = useCopy()
 
@@ -98,6 +124,9 @@ export default function AdminRewardsPage() {
   const [feeExpanded, setFeeExpanded] = useState(false)
   const [feeRouter, setFeeRouter] = useState('')
   const [feeApproved, setFeeApproved] = useState(true)
+
+  // --- Section G: Staking Config ---
+  const [stakingExpanded, setStakingExpanded] = useState(false)
 
   const now = Math.floor(Date.now() / 1000)
 
@@ -167,7 +196,11 @@ export default function AdminRewardsPage() {
             <div className="flex gap-2">
               <input value={newTokenAddr} onChange={(e) => setNewTokenAddr(e.target.value)} placeholder="0x..." className="flex-1 bg-white/5 border border-white/10 px-3 py-2 text-sm font-mono text-white rounded focus:outline-none focus:border-white/30" />
               {newTokenAddr.length === 42 && (
-                <CopyBtn text={encodeAddRewardToken(newTokenAddr as Address)} label="Calldata" />
+                <DownloadBatchBtn
+                  txs={[{ to: XKI_REWARD_DISTRIBUTOR, value: '0', data: encodeAddRewardToken(newTokenAddr as Address), description: `addRewardToken(${newTokenAddr})` }]}
+                  name="add-reward-token"
+                  label="Download Safe JSON"
+                />
               )}
             </div>
             {newTokenAddr.length === 42 && (
@@ -184,7 +217,11 @@ export default function AdminRewardsPage() {
             <AlertTriangle size={16} className="text-[#D4AF37] shrink-0" />
             <div className="text-sm text-gray-400">
               $XKI not registered as reward token.{' '}
-              <CopyBtn text={encodeAddRewardToken(XKI_TOKEN)} label="Copy addRewardToken calldata" />
+              <DownloadBatchBtn
+                txs={[{ to: XKI_REWARD_DISTRIBUTOR, value: '0', data: encodeAddRewardToken(XKI_TOKEN), description: 'addRewardToken($XKI)' }]}
+                name="add-xki-reward-token"
+                label="Download Safe JSON"
+              />
             </div>
           </div>
         )}
@@ -372,6 +409,62 @@ export default function AdminRewardsPage() {
         </div>
       </section>
 
+      {/* Section G — Staking Config */}
+      <section>
+        <button onClick={() => setStakingExpanded(!stakingExpanded)} className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-gray-500 mb-4 hover:text-white transition-colors">
+          Staking Config {stakingExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+        </button>
+        {stakingExpanded && (
+          <div className="glass-panel p-5 space-y-4">
+            <div>
+              <div className="text-[9px] uppercase tracking-[0.3em] text-gray-600 mb-1">Current Reward Distributor</div>
+              <div className="text-sm font-mono text-white">
+                {currentDistributor ? String(currentDistributor) : '—'}
+                {currentDistributor && String(currentDistributor).toLowerCase() !== XKI_REWARD_DISTRIBUTOR.toLowerCase() && (
+                  <span className="ml-2 text-red-400 text-[10px] uppercase">⚠ Mismatch</span>
+                )}
+                {currentDistributor && String(currentDistributor).toLowerCase() === XKI_REWARD_DISTRIBUTOR.toLowerCase() && (
+                  <span className="ml-2 text-emerald-400 text-[10px] uppercase">✓ Correct</span>
+                )}
+              </div>
+            </div>
+
+            <div className="text-[9px] uppercase tracking-[0.3em] text-gray-600 mb-1">Set Reward Distributor</div>
+            <div className="flex gap-3">
+              <DownloadBatchBtn
+                txs={[{ to: XKI_STAKING, value: '0', data: encodeSetRewardDistributor(XKI_REWARD_DISTRIBUTOR), description: `setRewardDistributor(${XKI_REWARD_DISTRIBUTOR})` }]}
+                name="set-reward-distributor"
+                label="Download Safe JSON (Set Distributor)"
+              />
+            </div>
+
+            <div className="text-[9px] uppercase tracking-[0.3em] text-gray-600 mb-1 mt-4">Update Reward Accounting</div>
+            <div className="flex gap-2 items-end">
+              <input
+                id="updateRewardAddr"
+                placeholder="0x... (user address)"
+                className="flex-1 bg-white/5 border border-white/10 px-3 py-2 text-sm font-mono text-white rounded focus:outline-none focus:border-white/30"
+              />
+              <button
+                onClick={() => {
+                  const addr = (document.getElementById('updateRewardAddr') as HTMLInputElement)?.value
+                  if (addr?.length === 42) {
+                    downloadJson(
+                      generateSafeBatchJson([{ to: XKI_REWARD_DISTRIBUTOR, value: '0', data: encodeUpdateReward(addr as Address), description: `updateReward(${addr})` }]),
+                      'update-reward'
+                    )
+                  }
+                }}
+                className="bg-white text-black text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-gray-200 px-4 py-2 transition-colors inline-flex items-center gap-1"
+              >
+                <Download size={10} /> Download Safe JSON
+              </button>
+            </div>
+            <div className="text-[10px] text-gray-600">Forces reward accounting update for a specific user. Use after fixing distributor address.</div>
+          </div>
+        )}
+      </section>
+
       {/* Section F — Fee Router Management */}
       <section>
         <button onClick={() => setFeeExpanded(!feeExpanded)} className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-gray-500 mb-4 hover:text-white transition-colors">
@@ -395,7 +488,11 @@ export default function AdminRewardsPage() {
             {feeRouter.length === 42 && (
               <div className="space-y-2">
                 <div className="text-[10px] text-gray-500 font-mono">To: {XKI_REWARD_DISTRIBUTOR}</div>
-                <CopyBtn text={encodeSetFeeRouter(feeRouter as Address, feeApproved)} label="Copy Calldata" />
+                <DownloadBatchBtn
+                  txs={[{ to: XKI_REWARD_DISTRIBUTOR, value: '0', data: encodeSetFeeRouter(feeRouter as Address, feeApproved), description: `setFeeRouter(${feeRouter}, ${feeApproved})` }]}
+                  name="set-fee-router"
+                  label="Download Safe JSON"
+                />
               </div>
             )}
           </div>
