@@ -2,6 +2,8 @@ import { useAccount } from 'wagmi';
 import { useWeb3Modal } from '@web3modal/wagmi/react';
 import { Copy, ExternalLink, Check } from 'lucide-react';
 import { useState } from 'react';
+import OverviewCards from '../components/wallet/OverviewCards';
+import VestingSection from '../components/wallet/VestingSection';
 
 function ConnectPrompt() {
   const { open } = useWeb3Modal();
@@ -80,7 +82,8 @@ export default function WalletPage() {
   return (
     <div className="max-w-6xl mx-auto px-6 py-10 space-y-10">
       <WalletHeader address={address} />
-      {/* Phase 2: OverviewCards + VestingSection */}
+      <OverviewCards address={address} />
+      <VestingSection address={address} />
       {/* Phase 3: StakingSection */}
       {/* Phase 4: TransactionHistory */}
       {/* Phase 5: BuyXKI */}
