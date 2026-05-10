@@ -81,12 +81,8 @@ export default function OverviewCards({ address }: { address: Address }) {
     },
   ];
 
-  const gridCols = hasVesting
-    ? 'grid-cols-2 md:grid-cols-4'
-    : 'grid-cols-1 sm:grid-cols-3';
-
   return (
-    <div className={`grid ${gridCols} gap-4`}>
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       {cards.map((c) => (
         <Card key={c.label} {...c} />
       ))}
