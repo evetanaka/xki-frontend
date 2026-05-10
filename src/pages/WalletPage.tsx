@@ -5,6 +5,7 @@ import { useState } from 'react';
 import OverviewCards from '../components/wallet/OverviewCards';
 import VestingSection from '../components/wallet/VestingSection';
 import StakingSection from '../components/wallet/StakingSection';
+import TransactionHistory from '../components/wallet/TransactionHistory';
 
 function ConnectPrompt() {
   const { open } = useWeb3Modal();
@@ -86,7 +87,7 @@ export default function WalletPage() {
       <OverviewCards address={address} />
       <VestingSection address={address} />
       <StakingSection address={address} />
-      {/* Phase 4: TransactionHistory */}
+      <TransactionHistory address={address} />
       {/* Phase 5: BuyXKI */}
     </div>
   );
