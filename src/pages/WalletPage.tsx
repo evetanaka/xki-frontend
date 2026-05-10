@@ -4,6 +4,7 @@ import { Copy, ExternalLink, Check } from 'lucide-react';
 import { useState } from 'react';
 import OverviewCards from '../components/wallet/OverviewCards';
 import VestingSection from '../components/wallet/VestingSection';
+import StakingSection from '../components/wallet/StakingSection';
 
 function ConnectPrompt() {
   const { open } = useWeb3Modal();
@@ -84,7 +85,7 @@ export default function WalletPage() {
       <WalletHeader address={address} />
       <OverviewCards address={address} />
       <VestingSection address={address} />
-      {/* Phase 3: StakingSection */}
+      <StakingSection address={address} />
       {/* Phase 4: TransactionHistory */}
       {/* Phase 5: BuyXKI */}
     </div>
