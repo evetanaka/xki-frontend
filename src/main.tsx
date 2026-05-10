@@ -14,6 +14,7 @@ import AdminPage from './pages/AdminPage';
 import NftClaimPage from './pages/NftClaimPage';
 import NftAdminPage from './pages/NftAdminPage';
 import AdminRewardsPage from './pages/AdminRewardsPage';
+import WalletPage from './pages/WalletPage';
 import Nav from './components/layout/Nav';
 import AdminNav from './components/admin/AdminNav';
 import './index.css';
@@ -42,6 +43,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
               <Route element={<App />}>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/stake" element={<StakePage />} />
+                <Route path="/wallet" element={<WalletPage />} />
                 <Route path="/guide" element={<GuidePage />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Route>

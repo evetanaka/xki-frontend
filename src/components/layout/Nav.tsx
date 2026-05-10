@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import WalletButton from '../WalletButton';
+import WalletDropdown from '../wallet/WalletDropdown';
 
 export default function Nav() {
   return (
@@ -18,7 +18,7 @@ export default function Nav() {
           <Link to="/stake" className="hidden md:block px-4 py-2 bg-white text-black text-[10px] uppercase tracking-widest font-bold hover:bg-gray-200 transition-colors">
             Stake XKI
           </Link>
-          <WalletButton />
+          <WalletDropdown />
         </div>
       </div>
     </nav>
