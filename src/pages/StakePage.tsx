@@ -317,7 +317,7 @@ export default function StakePage() {
                   </div>
                   <div>
                     <label className="text-[10px] uppercase tracking-widest text-gray-500 block mb-3">Lock Duration</label>
-                    <div className="grid grid-cols-5 gap-2">
+                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
                       {DURATIONS.map((d) => (
                         <button key={d} onClick={() => sim.setDuration(d)} className={`tier-card py-3 border border-white/10 text-center ${sim.duration === d ? 'active' : ''}`}>
                           <span className="block text-sm font-mono text-white">{d}m</span>
@@ -680,7 +680,7 @@ export default function StakePage() {
 
                 <div className="mb-8">
                   <label className="text-[10px] uppercase tracking-widest text-gray-500 block mb-3">Lock Duration</label>
-                  <div className="grid grid-cols-5 gap-2">
+                  <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
                     {TIER_DURATIONS.map((d, i) => (
                       <button key={d} onClick={() => setStakeTier(i)} className={`tier-card py-4 border border-white/10 text-center ${stakeTier === i ? 'active' : ''}`}>
                         <span className="text-2xl block mb-1">{TIER_EMOJIS[d]}</span>
