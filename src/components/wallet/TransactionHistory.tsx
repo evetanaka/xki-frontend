@@ -1,7 +1,7 @@
 import { type Address, formatUnits } from 'viem';
 import { useTransactionHistory, type TxEvent } from '../../hooks/useTransactionHistory';
 
-function fmt(value: bigint, decimals = 6): string {
+function fmt(value: bigint, decimals = 18): string {
   const num = Number(formatUnits(value, decimals));
   if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(2)}M`;
   if (num >= 1_000) return `${(num / 1_000).toFixed(1)}K`;

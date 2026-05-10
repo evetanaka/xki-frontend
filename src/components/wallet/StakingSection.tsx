@@ -12,14 +12,14 @@ const TIER_EMOJI: Record<number, string> = { 0: '🔭', 1: '🏗️', 2: '⚖️
 const TIER_MULT: Record<number, number> = { 0: 1, 1: 2, 2: 3, 3: 4, 4: 5 };
 const TIER_DURATION: Record<number, number> = { 0: 3, 1: 6, 2: 12, 3: 24, 4: 36 };
 
-function fmt(value: bigint, decimals = 6): string {
+function fmt(value: bigint, decimals = 18): string {
   const num = Number(formatUnits(value, decimals));
   if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(2)}M`;
   if (num >= 1_000) return `${(num / 1_000).toFixed(1)}K`;
   return num.toLocaleString('en-US', { maximumFractionDigits: 2 });
 }
 
-function fmtFull(value: bigint, decimals = 6): string {
+function fmtFull(value: bigint, decimals = 18): string {
   return Number(formatUnits(value, decimals)).toLocaleString('en-US', { maximumFractionDigits: 2 });
 }
 
@@ -87,18 +87,18 @@ function PositionRow({ pos, now }: { pos: StakePosition; now: number }) {
         onClick={() => setExpanded(!expanded)}
       >
         <span className="text-sm font-mono text-gray-500 w-8">#{Number(pos.id)}</span>
-        <span className="text-sm font-mono text-white flex-1">{fmtFull(pos.amount)} $XKI</span>
-        <span className="text-sm text-gray-400 hidden sm:block flex-1">
+        <span className="text-sm font-mono text-white flex-1 truncate">{fmtFull(pos.amount)} $XKI</span>
+        <span className="text-sm text-gray-400 hidden lg:block flex-1 truncate">
           {TIER_EMOJI[tier]} {TIER_NAME[tier]} · {TIER_DURATION[tier]}m · {TIER_MULT[tier]}x
         </span>
-        <span className="text-sm font-mono text-white hidden md:block w-24 text-right">{fmt(pos.weight)}</span>
-        <div className="flex items-center gap-2">
+        <span className="text-sm font-mono text-white hidden lg:block w-28 text-right truncate">{fmt(pos.weight)}</span>
+        <div className="flex items-center gap-2 shrink-0">
           {pos.fromVesting && (
-            <span className="text-[9px] uppercase tracking-wider px-2 py-0.5 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded">Vesting</span>
+            <span className="text-[9px] uppercase tracking-wider px-2 py-0.5 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded hidden sm:inline">Vesting</span>
           )}
           <StatusBadge status={status} />
         </div>
-        <svg className={`w-3 h-3 text-gray-500 transition-transform ${expanded ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 10 6">
+        <svg className={`w-3 h-3 text-gray-500 transition-transform shrink-0 ${expanded ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 10 6">
           <path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </div>
@@ -263,10 +263,10 @@ export default function StakingSection({ address }: { address: Address }) {
         <div className="hidden sm:flex items-center gap-4 px-2 text-[9px] uppercase tracking-[0.3em] text-gray-600">
           <span className="w-8">#</span>
           <span className="flex-1">Amount</span>
-          <span className="flex-1">Tier</span>
-          <span className="w-24 text-right hidden md:block">Weight</span>
-          <span className="w-48 text-right">Status</span>
-          <span className="w-3" />
+          <span className="flex-1 hidden lg:block">Tier</span>
+          <span className="w-28 text-right hidden lg:block">Weight</span>
+          <span className="shrink-0">Status</span>
+          <span className="w-3 shrink-0" />
         </div>
       )}
 

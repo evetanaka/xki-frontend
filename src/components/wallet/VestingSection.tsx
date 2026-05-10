@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { type Address, formatUnits } from 'viem';
+import { type Address, formatUnits, parseUnits } from 'viem';
 import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { useVestingInfo } from '../../hooks/useWallet';
 import { vestingAbi, xkiStakingAbi, XKI_STAKING } from '../../config/contracts';
 
-function fmt(value: bigint, decimals = 6): string {
+function fmt(value: bigint, decimals = 18): string {
   const num = Number(formatUnits(value, decimals));
   if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(2)}M`;
   if (num >= 1_000) return `${(num / 1_000).toFixed(1)}K`;
@@ -50,7 +50,17 @@ export default function VestingSection({ address }: { address: Address }) {
     );
   }
 
-  if (!vestingAddress || !vesting) return null;
+  if (!vestingAddress || !vesting) {
+    return (
+      <div className="glass-panel p-6 space-y-4">
+        <div className="flex items-center gap-3">
+          <span className="text-xl">🔒</span>
+          <h2 className="text-[10px] uppercase tracking-[0.3em] text-gray-400 font-bold">Vesting</h2>
+        </div>
+        <p className="text-sm text-gray-500 text-center py-4">No vesting contracts found for this wallet</p>
+      </div>
+    );
+  }
 
   const now = Date.now() / 1000;
   const { totalAllocation, released, releasable, lockedBalance, start, cliff, vestingEnd } = vesting;
@@ -77,8 +87,7 @@ export default function VestingSection({ address }: { address: Address }) {
   };
 
   const handleStakeFromVesting = () => {
-    // XKI has 6 decimals
-    const amountWei = BigInt(Math.floor(parseFloat(stakeAmount) * 1e6));
+    const amountWei = parseUnits(stakeAmount, 18);
     stakeFromVesting({
       address: XKI_STAKING,
       abi: xkiStakingAbi,
@@ -199,7 +208,7 @@ export default function VestingSection({ address }: { address: Address }) {
                 className="flex-1 bg-transparent border border-white/10 px-3 py-2 text-sm font-mono text-white focus:border-white/30 focus:outline-none"
               />
               <button
-                onClick={() => setStakeAmount(formatUnits(lockedBalance, 6))}
+                onClick={() => setStakeAmount(formatUnits(lockedBalance, 18))}
                 className="px-3 py-2 border border-white/10 text-[9px] uppercase tracking-widest text-gray-500 hover:text-white hover:border-white/30 transition-colors"
               >
                 Max

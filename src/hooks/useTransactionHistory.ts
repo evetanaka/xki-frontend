@@ -106,7 +106,7 @@ function parseHardUnstakeLogs(logs: any[]): TxEvent[] {
       timestamp: parseInt(log.timeStamp, 16),
       txHash: log.transactionHash,
       amount: returned,
-      extra: formatUnits(penalty, 6),
+      extra: formatUnits(penalty, 18),
     };
   });
 }
