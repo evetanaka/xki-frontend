@@ -6,6 +6,7 @@ import OverviewCards from '../components/wallet/OverviewCards';
 import VestingSection from '../components/wallet/VestingSection';
 import StakingSection from '../components/wallet/StakingSection';
 import TransactionHistory from '../components/wallet/TransactionHistory';
+import BuyXKI from '../components/wallet/BuyXKI';
 
 function ConnectPrompt() {
   const { open } = useWeb3Modal();
@@ -88,7 +89,7 @@ export default function WalletPage() {
       <VestingSection address={address} />
       <StakingSection address={address} />
       <TransactionHistory address={address} />
-      {/* Phase 5: BuyXKI */}
+      <BuyXKI />
     </div>
   );
 }
