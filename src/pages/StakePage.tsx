@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useAccount, useWriteContract, useWaitForTransactionReceipt, usePublicClient } from 'wagmi';
 import { formatUnits, parseUnits, type Address } from 'viem';
 import {
   Wallet, ArrowLeftRight, PlusCircle, Copy, ChevronRight,
@@ -75,40 +75,37 @@ export default function StakePage() {
   const vestingInfo = useVestingInfo(address);
 
   // Write contracts
-  const { writeContract: approve, data: approveTxHash, isPending: approving } = useWriteContract();
-  const { writeContract: stake, data: stakeTxHash, isPending: staking } = useWriteContract();
+  // Async write for sequential approve→stake flow
+  const { writeContractAsync } = useWriteContract();
+  // Other write contracts (reactive)
   const { writeContract: requestUnstake, data: cooldownTxHash, isPending: requestingUnstake } = useWriteContract();
   const { writeContract: completeUnstake, data: completeTxHash } = useWriteContract();
   const { writeContract: hardUnstake, data: hardTxHash, isPending: hardUnstaking } = useWriteContract();
   const { writeContract: claimRewards, data: claimTxHash, isPending: claiming } = useWriteContract();
   const { writeContract: releaseVesting, data: releaseTxHash, isPending: releasing } = useWriteContract();
 
-  const { isSuccess: approveSuccess, isLoading: approveConfirming } = useWaitForTransactionReceipt({ hash: approveTxHash });
-  const { isSuccess: stakeSuccess, isLoading: stakeConfirming } = useWaitForTransactionReceipt({ hash: stakeTxHash });
+  const publicClient = usePublicClient();
+
+  // Stake flow state machine
+  const [stakeStatus, setStakeStatus] = useState<'idle' | 'approving' | 'approve-confirming' | 'staking' | 'stake-confirming' | 'done' | 'error'>('idle');
+  const [stakeError, setStakeError] = useState<string | null>(null);
+
+  const approving = stakeStatus === 'approving' || stakeStatus === 'approve-confirming';
+  const staking = stakeStatus === 'staking' || stakeStatus === 'stake-confirming';
+  const stakeConfirming = stakeStatus === 'stake-confirming';
+  const approveConfirming = stakeStatus === 'approve-confirming';
+
   const { isSuccess: cooldownSuccess, isLoading: cooldownConfirming } = useWaitForTransactionReceipt({ hash: cooldownTxHash });
   const { isSuccess: hardSuccess, isLoading: hardConfirming } = useWaitForTransactionReceipt({ hash: hardTxHash });
   const { isSuccess: claimSuccess, isLoading: claimConfirming } = useWaitForTransactionReceipt({ hash: claimTxHash });
 
-  // After approve succeeds, auto-trigger stake
+  // Refetch after unstake/claim
   useEffect(() => {
-    if (approveSuccess && stakeAmount && address) {
-      const amount = parseUnits(stakeAmount, 18);
-      stake({
-        address: XKI_STAKING,
-        abi: xkiStakingAbi,
-        functionName: 'stake',
-        args: [amount, stakeTier],
-      });
-    }
-  }, [approveSuccess]);
-
-  // Refetch after stake/unstake/claim
-  useEffect(() => {
-    if (stakeSuccess || cooldownSuccess || hardSuccess || claimSuccess) {
+    if (cooldownSuccess || hardSuccess || claimSuccess) {
       refetchPositions();
       refetchAllowance();
     }
-  }, [stakeSuccess, cooldownSuccess, hardSuccess, claimSuccess]);
+  }, [cooldownSuccess, hardSuccess, claimSuccess]);
 
   // Tick timer for cooldowns
   useEffect(() => {
@@ -129,35 +126,70 @@ export default function StakePage() {
   const totalClaimable = rewardList.reduce((s, r) => s + r.earned, 0n);
 
   // Stake action
-  const handleStake = () => {
-    if (!stakeAmount || !address) return;
+  const handleStake = async () => {
+    if (!stakeAmount || !address || !publicClient) return;
+    if (stakeStatus !== 'idle' && stakeStatus !== 'done' && stakeStatus !== 'error') return; // prevent double-click
+
+    setStakeError(null);
+    const amount = parseUnits(stakeAmount, 18);
+
     try {
-      const amount = parseUnits(stakeAmount, 18);
-      const needsApproval = allowance === undefined || allowance < amount;
-      console.log('[Stake] amount:', amount.toString(), 'tier:', stakeTier, 'allowance:', allowance?.toString(), 'needsApproval:', needsApproval);
-      if (needsApproval) {
-        approve({
+      // Step 1: Check allowance and approve if needed
+      const currentAllowance = allowance ?? 0n;
+      console.log('[Stake] amount:', amount.toString(), 'tier:', stakeTier, 'allowance:', currentAllowance.toString());
+
+      if (currentAllowance < amount) {
+        setStakeStatus('approving');
+        console.log('[Stake] Approving...');
+        const approveTxHash = await writeContractAsync({
           address: XKI_TOKEN,
           abi: xkiTokenAbi,
           functionName: 'approve',
           args: [XKI_STAKING, amount],
-        }, {
-          onError: (err) => console.error('[Approve Error]', err),
-          onSuccess: (hash) => console.log('[Approve TX]', hash),
         });
-      } else {
-        stake({
-          address: XKI_STAKING,
-          abi: xkiStakingAbi,
-          functionName: 'stake',
-          args: [amount, stakeTier],
-        }, {
-          onError: (err) => console.error('[Stake Error]', err),
-          onSuccess: (hash) => console.log('[Stake TX]', hash),
-        });
+        console.log('[Stake] Approve TX:', approveTxHash);
+
+        // Wait for approve confirmation
+        setStakeStatus('approve-confirming');
+        const approveReceipt = await publicClient.waitForTransactionReceipt({ hash: approveTxHash });
+        if (approveReceipt.status !== 'success') {
+          throw new Error('Approve transaction failed');
+        }
+        console.log('[Stake] Approve confirmed');
       }
-    } catch (err) {
-      console.error('[handleStake Error]', err);
+
+      // Step 2: Stake
+      setStakeStatus('staking');
+      console.log('[Stake] Staking...');
+      const stakeTxHash = await writeContractAsync({
+        address: XKI_STAKING,
+        abi: xkiStakingAbi,
+        functionName: 'stake',
+        args: [amount, stakeTier],
+      });
+      console.log('[Stake] Stake TX:', stakeTxHash);
+
+      // Wait for stake confirmation
+      setStakeStatus('stake-confirming');
+      const stakeReceipt = await publicClient.waitForTransactionReceipt({ hash: stakeTxHash });
+      if (stakeReceipt.status !== 'success') {
+        throw new Error('Stake transaction failed');
+      }
+      console.log('[Stake] Stake confirmed!');
+
+      setStakeStatus('done');
+      setStakeAmount('');
+      refetchPositions();
+      refetchAllowance();
+
+      // Reset status after a moment
+      setTimeout(() => setStakeStatus('idle'), 3000);
+    } catch (err: any) {
+      console.error('[Stake Error]', err);
+      setStakeStatus('error');
+      setStakeError(err?.shortMessage || err?.message || 'Transaction failed');
+      // Allow retry
+      setTimeout(() => setStakeStatus('idle'), 5000);
     }
   };
 
@@ -722,10 +754,13 @@ export default function StakePage() {
                   disabled={!stakeAmount || Number(stakeAmount) <= 0 || approving || approveConfirming || staking || stakeConfirming}
                   className="w-full py-4 bg-white text-black text-xs font-bold uppercase tracking-[0.2em] hover:bg-gray-200 transition-colors flex items-center justify-center gap-3 disabled:bg-gray-900 disabled:text-gray-600 disabled:cursor-not-allowed"
                 >
-                  {approving ? 'Confirm in wallet...' : approveConfirming ? 'Approving ⏳' : staking ? 'Confirm in wallet...' : stakeConfirming ? 'Staking ⏳' : stakeAmount && Number(stakeAmount) > 0
+                  {stakeStatus === 'done' ? '✅ Staked!' : approving ? 'Confirm in wallet...' : approveConfirming ? 'Approving ⏳' : staking ? 'Confirm in wallet...' : stakeConfirming ? 'Staking ⏳' : stakeAmount && Number(stakeAmount) > 0
                     ? (allowance !== undefined && allowance < parseUnits(stakeAmount || '0', 18) ? `Approve & Stake ${Number(stakeAmount).toLocaleString()} XKI` : `Stake ${Number(stakeAmount).toLocaleString()} XKI`)
                     : 'Enter Amount to Stake'}
                 </button>
+                {stakeError && (
+                  <p className="text-red-400 text-xs mt-2 text-center">{stakeError}</p>
+                )}
               </div>
             </div>
           </section>
