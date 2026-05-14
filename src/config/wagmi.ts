@@ -1,7 +1,7 @@
 import { defaultWagmiConfig } from '@web3modal/wagmi'
 import { mainnet } from 'wagmi/chains'
 
-export const projectId = 'e9d25f804bc56e498f7498fd3145200e'
+export const projectId = '960bf6c7fb73e1c916257fecf5cda9fd'
 
 const metadata = {
   name: 'Ki Foundation',
